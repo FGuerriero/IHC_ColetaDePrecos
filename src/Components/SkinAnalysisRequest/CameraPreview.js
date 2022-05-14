@@ -22,10 +22,10 @@ export default function CameraPreview(props) {
             >
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.save} onPress={handleSave}>
-                        <Text style={styles.text}>Save Photo</Text>
+                        <Text style={styles.text}>Salvar Foto</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.reTake} onPress={handleRetake}>
-                        <Text style={styles.text}>Re-take Photo</Text>
+                        <Text style={styles.text}>Tirar Novamente</Text>
                     </TouchableOpacity>
                 </View>
             </ImageBackground>
