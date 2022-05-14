@@ -12,17 +12,12 @@ function Home() {
                 <SendPic handleNewPic={setNewPic}/>:
                 <View style={styles.container}>
                     <View style={styles.header}>
-                        <Image 
-                            style={styles.logo} 
-                            source={require('../../../assets/logo.png')} 
-                            resizeMode= 'contain'
-                        />
                         <Text style={styles.title}>HOME</Text>
                     </View>
                     <View style={styles.body}>
                         <View style={styles.sendPic}>
                             <TouchableOpacity style={styles.takePicButton} onPress={() => setNewPic(true)}>
-                                        <Text style={styles.textPicButton}>Colect new picture</Text>
+                                        <Text style={styles.textPicButton}>Coletar Novo Produto</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -36,12 +31,11 @@ export default Home;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        marginTop: 10
+        flex: 1
     },
     header: {
         flex: .2,
-        marginTop: 10,
+        marginTop: 80,
     },
     logo: {
         flex: .4,

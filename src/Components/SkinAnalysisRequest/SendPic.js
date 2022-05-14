@@ -4,20 +4,19 @@ import * as Location from 'expo-location';
 import { SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert, View, ImageBackground, Image, TextInput, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker'
 import TakePic from './TakePic';
-import BodyAreas from '../SkinAnalysisRequest/BodyAreas';
-import {human} from './ImageMapper/human.ts';
 import { AntDesign } from '@expo/vector-icons';
+import CurrencyInput from 'react-native-currency-input';
 
 export default function SendPic(props) {
     const [startCamera, setStartCamera] = useState(false)
     const [photo, setPhoto] = useState(null)
     const [bodyAreaSelection, setBodyAreaSelection] = useState(false)
-    const [selectedBodyArea, setSelectedBodyArea] = useState(0)
-    const [selectedDisease, setSelectedDisease] = useState("notSelected")
+    const [loja, setLoja] = useState("notSelected")
+    const [produto, setProduto] = useState("notSelected")
     const [location, setLocation] = useState(null)
     const [locationErrorMsg, setLocationErrorMsg] = useState(null)
-    const [comments, setComments] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [value, setValue] = useState(0)
     
     const __startCamera = async () =>{
         const {status} = await Camera.requestCameraPermissionsAsync()
@@ -25,7 +24,7 @@ export default function SendPic(props) {
         if(status === 'granted'){
             setStartCamera(true)
         }else{
-            Alert.alert("Access denied!")
+            Alert.alert("O App não tem acesso á Camera. \nEntre nas configurações do dispositivo e habilite o acesso ao Coletor de preços!")
         }
     }
     
@@ -40,62 +39,37 @@ export default function SendPic(props) {
 
         let myLocation = await Location.getCurrentPositionAsync({})
         setLocation(myLocation)
-
-        //Log for Debugging
-        console.log('GPS location: ', location )
-        console.log('Photo: ', photo)
     },[])
     
     const sendInformation = async () => {
-        //Check if Body Area is selected
-        if( selectedBodyArea === 0 ){
-            Alert.alert("Please, select Body Area before submit request.")
+        //Validar Campos para envio da Coleta
+        if(!photo){
+            Alert.alert('Tire uma foto do Produto antes de enviar Coleta!')
             return
-        } else if(selectedDisease === 'notSelected'){
-            Alert.alert("Please, select Disease before submit request.")
+        }else if( produto === 'notSelected' ){
+            Alert.alert('Selecione Produto antes de enviar Coleta!')
+            return
+        } else if(loja === 'notSelected'){
+            Alert.alert('Selecione Loja antes de enviar Coleta!')
+            return
+        }else if(value < 0.01){
+            Alert.alert('Preço inválido! \nDigite um valor maior que R$0,01')
             return
         }
 
         setLoading(true)
         
-        //Enviando solicitação para API
-        const formData = new FormData()
-        formData.append("img_file", { uri: photo.uri , name: 'image.png', type: 'image/png' })
-        formData.append('body_area', human[selectedBodyArea].value)
-        formData.append('comment', comments)
-        formData.append('location', "Latitude: " + location.coords.latitude + ", Longitude: " +  location.coords.longitude)
-        formData.append('request_date', new Date().toISOString().split('T')[0])
-        formData.append('disease', selectedDisease)
-        
-        fetch('https://0e62-187-32-187-251.sa.ngrok.io/uploadimage', {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                },
-                body: formData
-        }).then( response => {
-            console.log("Status: ", response.status)
-            return response.json()
-        })
-        .then( data => {
-            console.log('Response: ', data)
-            
-            Alert.alert(data.msg)
-            //props.handleNewPic(false)
-        }).catch(err => {
-            console.log("Error: ", err)
-        }).finally(() => {
-            setLoading(false)
-        })
+        setTimeout(() => {
+            props.handleNewPic(false)
+            Alert.alert("Coleta de Preço do Produto realizada com sucesso!")
+        }, 3500)
 
     }    
 
     return (
         <SafeAreaView style={styles.container}>
             {startCamera ? 
-                <TakePic handleCamState={setStartCamera} photoMini={setPhoto}/> : 
-                    bodyAreaSelection ? 
-                    <BodyAreas handleBodyArea={setBodyAreaSelection} handleSelection={setSelectedBodyArea}/>:(
+                <TakePic handleCamState={setStartCamera} photoMini={setPhoto}/> : (
                 <View style={styles.subContainer}>
                     <View style={styles.header}>
                         <TouchableOpacity style={styles.backButton} onPress={() => props.handleNewPic(false)}>
@@ -107,36 +81,45 @@ export default function SendPic(props) {
                             {photo ? <Image source={{uri: photo.uri}} style={styles.photo} resizeMode='center'/> : <View/>}
                         </ImageBackground>
                         <TouchableOpacity style={styles.takePicButton} onPress={__startCamera}>
-                            <Text style={styles.textPicButton}>{!!photo ? "Retake Picture" : "Take a picture"}</Text>
+                            <Text style={styles.textPicButton}>{!!photo ? "Tirar Foto Novamente" : "Tirar Foto"}</Text>
                         </TouchableOpacity>
-
-                        <View style={styles.containerSelectBodyAreas}>
-                            <TouchableOpacity style={styles.btnSelectBodyAreas} onPress={() => setBodyAreaSelection(true)}>
-                                <Text style={styles.txtSelectBodyArea}>Select Body Area</Text>
-                            </TouchableOpacity>
-                            <Image style={styles.photoBodyArea} source={human[selectedBodyArea].avatar}/>
-                        </View>
 
                         <Picker
                             style={styles.picker}
-                            selectedValue={selectedDisease}
-                            enabled={!!photo}
-                            onValueChange={newValue => setSelectedDisease(newValue)}
+                            selectedValue={produto}
+                            onValueChange={newValue => setProduto(newValue)}
                         >
-                            <Picker.Item label='Select Disease' value='notSelected' key={0}/>
-                            <Picker.Item label='Healthy' value='healthy' key={1}/>
-                            <Picker.Item label='To be Defined' value='toBeDefined' key={2}/>
-                            <Picker.Item label='2' value='2' key={3}/>
-                            <Picker.Item label='3' value='3' key={4}/>
-                            <Picker.Item label='4' value='4' key={5}/>
+                            <Picker.Item label='Selecione Produto' value='notSelected' key={0}/>
+                            <Picker.Item label='Pão Francês' value='paoFrances' key={1}/>
+                            <Picker.Item label='Arroz' value='arroz' key={2}/>
+                            <Picker.Item label='Feijão' value='feijao' key={3}/>
+                            <Picker.Item label='Linguiça Calabreza' value='linguicaCalabreza' key={4}/>
+                            <Picker.Item label='Leite' value='leite' key={5}/>
+                        </Picker>
+                        
+                        <Picker
+                            style={styles.picker}
+                            selectedValue={loja}
+                            onValueChange={newValue => setLoja(newValue)}
+                        >
+                            <Picker.Item label='Selecione Loja' value='notSelected' key={0}/>
+                            <Picker.Item label='Extra Pirituba' value='extraPirituba' key={1}/>
+                            <Picker.Item label='Açai Freguesia do Ó' value='acaiFreguesiaDoO' key={2}/>
+                            <Picker.Item label='Dia Mutinga' value='diaMutinga' key={3}/>
+                            <Picker.Item label='Pão de Açucar Vila Mariana' value='paoDeAcucarVilaMAriana' key={4}/>
+                            <Picker.Item label='Carrefour Colônia Alemã' value='carrefourColoniaAlema' key={5}/>
                         </Picker>
                         
                         <View style={styles.textFieldContainer}>
-                            <Text style={styles.label}> Comments: </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder={'Example: moderate itching, redness after sun exposure, etc...'}
-                                onChangeText={newText => setComments(newText)}
+                            <Text style={styles.label}> Preço: </Text>
+                            <CurrencyInput
+                                style={styles.preco}
+                                value={value}
+                                onChangeValue={setValue}
+                                prefix="R$"
+                                delimiter="."
+                                separator=","
+                                precision={2}
                             />
                         </View>
                     </View>
@@ -149,7 +132,7 @@ export default function SendPic(props) {
 
                     <View style={styles.footer}>
                         <TouchableOpacity style={styles.submitBtn} onPress={ sendInformation }>
-                            <Text style={styles.btnText}>SUBMIT</Text>
+                            <Text style={styles.btnText}>ENVIAR</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -221,18 +204,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         width: 150
     },
-    textFieldContainer: {
-        height: 100,
-        backgroundColor: '#fffb',
-        marginVertical: 5,
-        borderWidth: 1,
-        alignItems:'center',
-        padding: 5
-    },
-    label: {
-        flex: 1,
-        fontSize: 20
-    },
     input: {
         flex: 1,
         fontSize: 15
@@ -279,5 +250,20 @@ const styles = StyleSheet.create({
     },
     backButton: {
         alignSelf: 'flex-start'
+    },
+    preco: {
+        borderWidth: 1,
+        height: 30,
+        paddingLeft: 10
+    },
+    label: {
+        fontSize: 20,
+        marginBottom: 5
+    },
+    textFieldContainer: {
+        flex: .4,
+        backgroundColor: '#fffb',
+        marginVertical: 5,
+        padding: 5
     }
 })

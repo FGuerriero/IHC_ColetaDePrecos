@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "VitalSkinClient",
-    "slug": "VitalSkinClient",
+    "name": "ColetaDePreçosEmLojas",
+    "slug": "ColetaDePrecosEmLojas",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/favicon.png",
         "backgroundColor": "#FFFFFF"
       }
     },
