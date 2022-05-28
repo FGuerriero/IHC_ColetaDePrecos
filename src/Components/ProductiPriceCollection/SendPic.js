@@ -6,18 +6,20 @@ import { Picker } from '@react-native-picker/picker'
 import TakePic from './TakePic';
 import { AntDesign } from '@expo/vector-icons';
 import CurrencyInput from 'react-native-currency-input';
+import ScanBarCode from './ScanningBarCode';
 
 export default function SendPic(props) {
     const [startCamera, setStartCamera] = useState(false)
+    const [startScannCodeBar, setStartScannCodeBar] = useState(false)
     const [photo, setPhoto] = useState(null)
-    const [bodyAreaSelection, setBodyAreaSelection] = useState(false)
     const [loja, setLoja] = useState("notSelected")
     const [produto, setProduto] = useState("notSelected")
     const [location, setLocation] = useState(null)
     const [locationErrorMsg, setLocationErrorMsg] = useState(null)
     const [loading, setLoading] = useState(false)
     const [value, setValue] = useState(0)
-    
+    const [barCode, setBarCode] = useState("Código do Produto")
+
     const __startCamera = async () =>{
         const {status} = await Camera.requestCameraPermissionsAsync()
 
@@ -27,7 +29,7 @@ export default function SendPic(props) {
             Alert.alert("O App não tem acesso á Camera. \nEntre nas configurações do dispositivo e habilite o acesso ao Coletor de preços!")
         }
     }
-    
+
     //Reload Hook
     useEffect(async () => {
         let { status } = await Location.requestForegroundPermissionsAsync();
@@ -40,11 +42,14 @@ export default function SendPic(props) {
         let myLocation = await Location.getCurrentPositionAsync({})
         setLocation(myLocation)
     },[])
-    
+
     const sendInformation = async () => {
         //Validar Campos para envio da Coleta
         if(!photo){
             Alert.alert('Tire uma foto do Produto antes de enviar Coleta!')
+            return
+        }else if(barCode === 'Código do Produto'){
+            Alert.alert('Escaneie Código do Produto antes de enviar Coleta!')
             return
         }else if( produto === 'notSelected' ){
             Alert.alert('Selecione Produto antes de enviar Coleta!')
@@ -58,18 +63,19 @@ export default function SendPic(props) {
         }
 
         setLoading(true)
-        
+
         setTimeout(() => {
             props.handleNewPic(false)
             Alert.alert("Coleta de Preço do Produto realizada com sucesso!")
         }, 3500)
 
-    }    
+    }
 
     return (
         <SafeAreaView style={styles.container}>
-            {startCamera ? 
-                <TakePic handleCamState={setStartCamera} photoMini={setPhoto}/> : (
+            {startCamera ?
+                <TakePic handleCamState={setStartCamera} photoMini={setPhoto}/> : 
+                startScannCodeBar? <ScanBarCode handleScannState={setStartScannCodeBar} handleBarCode={setBarCode}/>:(
                 <View style={styles.subContainer}>
                     <View style={styles.header}>
                         <TouchableOpacity style={styles.backButton} onPress={() => props.handleNewPic(false)}>
@@ -83,6 +89,16 @@ export default function SendPic(props) {
                         <TouchableOpacity style={styles.takePicButton} onPress={__startCamera}>
                             <Text style={styles.textPicButton}>{!!photo ? "Tirar Foto Novamente" : "Tirar Foto"}</Text>
                         </TouchableOpacity>
+                        
+                        <View style={styles.barCodeContainer}>
+                            <Text style={styles.txtBarCode}>{barCode}</Text>
+                            <TouchableOpacity 
+                                style={styles.btnScannBarCode}
+                                onPress={() => setStartScannCodeBar(true)}
+                            >
+                                <Text style={styles.textPicButton}>Escanear</Text>
+                            </TouchableOpacity>
+                        </View>
 
                         <Picker
                             style={styles.picker}
@@ -95,8 +111,10 @@ export default function SendPic(props) {
                             <Picker.Item label='Feijão' value='feijao' key={3}/>
                             <Picker.Item label='Linguiça Calabreza' value='linguicaCalabreza' key={4}/>
                             <Picker.Item label='Leite' value='leite' key={5}/>
+                            <Picker.Item label='Livro' value='livro' key={6}/>
+                            <Picker.Item label='Caderno' value='caderno' key={7}/>
                         </Picker>
-                        
+
                         <Picker
                             style={styles.picker}
                             selectedValue={loja}
@@ -109,7 +127,7 @@ export default function SendPic(props) {
                             <Picker.Item label='Pão de Açucar Vila Mariana' value='paoDeAcucarVilaMAriana' key={4}/>
                             <Picker.Item label='Carrefour Colônia Alemã' value='carrefourColoniaAlema' key={5}/>
                         </Picker>
-                        
+
                         <View style={styles.textFieldContainer}>
                             <Text style={styles.label}> Preço: </Text>
                             <CurrencyInput
@@ -219,7 +237,7 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 15,
         fontWeight: 'bold'
-    }, 
+    },
     containerSelectBodyAreas: {
         flex: .1,
         justifyContent: 'space-between',
@@ -265,5 +283,28 @@ const styles = StyleSheet.create({
         backgroundColor: '#fffb',
         marginVertical: 5,
         padding: 5
+    },
+    barCodeContainer: {
+        flex: .2,
+        flexDirection: 'row',
+        // borderColor: 'black',
+        // borderWidth: 5,
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    btnScannBarCode: {
+        justifyContent: 'center',
+        alignSelf: 'center',
+        alignItems: 'center',
+        backgroundColor: '#3cbfadc5',
+        elevation: 5,
+        width: 150,
+        height: 35,
+        borderWidth: .01,
+        borderRadius: 40
+    },
+    txtBarCode: {
+        paddingLeft: 10,
+        fontSize: 16
     }
 })

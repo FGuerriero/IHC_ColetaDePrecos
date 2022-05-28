@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
-import SendPic from '../SkinAnalysisRequest/SendPic';
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
+import SendPic from '../ProductiPriceCollection/SendPic';
 
 function Home() {
     const [newPic, setNewPic] = useState(false)
