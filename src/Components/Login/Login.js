@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
         fontSize: 30,
         color: '#3cbfad',
         textAlign: 'center',
-        paddingVertical: 50,
         // borderColor: '#000',
         // borderWidth: 5
     },
@@ -92,7 +91,8 @@ const styles = StyleSheet.create({
         width: 300,
         height: 35,
         textAlign: 'center',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        marginTop: 5
     },
     formButtons: {
         flex: .3,
