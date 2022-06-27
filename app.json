@@ -2,9 +2,9 @@
   "expo": {
     "name": "ColetaDePreçosEmLojas",
     "slug": "ColetaDePrecosEmLojas",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/LOGO_Currency.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -17,16 +17,18 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "io.fatecsp.coletadeprecos"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/favicon.png",
+        "foregroundImage": "./assets/LOGO_Currency.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "io.fatecsp.coletadeprecos"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/LOGO_Currency.png"
     }
   }
 }

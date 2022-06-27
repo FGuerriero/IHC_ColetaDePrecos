@@ -13,6 +13,7 @@ export default function SendPic(props) {
     const [startScannCodeBar, setStartScannCodeBar] = useState(false)
     const [photo, setPhoto] = useState(null)
     const [loja, setLoja] = useState("notSelected")
+    const [marca, setMarca] = useState("notSelected")
     const [produto, setProduto] = useState("notSelected")
     const [location, setLocation] = useState(null)
     const [locationErrorMsg, setLocationErrorMsg] = useState(null)
@@ -60,6 +61,9 @@ export default function SendPic(props) {
         }else if(value < 0.01){
             Alert.alert('Preço inválido! \nDigite um valor maior que R$0,01')
             return
+        }else if(marca === 'notSelected'){
+            Alert.alert('Digite a Marca do produto antes de enviar Coleta!')
+            return
         }
 
         setLoading(true)
@@ -78,8 +82,13 @@ export default function SendPic(props) {
                 startScannCodeBar? <ScanBarCode handleScannState={setStartScannCodeBar} handleBarCode={setBarCode}/>:(
                 <View style={styles.subContainer}>
                     <View style={styles.header}>
+                        <Image
+                            source={require('../../../assets/header.png')} 
+                            resizeMode= 'stretch'
+                            style={{height: '50%', width: '100%'}}
+                        />
                         <TouchableOpacity style={styles.backButton} onPress={() => props.handleNewPic(false)}>
-                            <AntDesign name="leftcircle" size={40} color='#3cbfad' />
+                            <AntDesign name="leftcircle" size={40} color='#80808070' />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.body}>
@@ -129,6 +138,12 @@ export default function SendPic(props) {
                         </Picker>
 
                         <View style={styles.textFieldContainer}>
+                            <Text style={styles.label}> Marca: </Text>
+                            <TextInput 
+                                style={styles.inputMarca}
+                                placeholder={'Digite a marca do produto'}
+                                onChangeText={inputMarca => setMarca(inputMarca)}
+                            />
                             <Text style={styles.label}> Preço: </Text>
                             <CurrencyInput
                                 style={styles.preco}
@@ -144,13 +159,13 @@ export default function SendPic(props) {
 
                     {
                         loading?
-                        <ActivityIndicator animating={loading} size="large" color="#3cbfad"/>:
+                        <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>:
                         <View/>
                     }
 
                     <View style={styles.footer}>
                         <TouchableOpacity style={styles.submitBtn} onPress={ sendInformation }>
-                            <Text style={styles.btnText}>ENVIAR</Text>
+                            <Text style={styles.btnText}>GRAVAR</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -167,28 +182,30 @@ const styles = StyleSheet.create({
     },
     subContainer: {
         flex: 1,
-        justifyContent: 'center',
-        paddingHorizontal: 20
+        marginTop: '6%'
     },
     header: {
-        height: 50
+        flex: .17,
+        justifyContent: 'space-between'
     },
     body: {
         flex: .8,
         justifyContent: 'flex-start',
+        marginHorizontal: '5%'
     },
     footer: {
-        height: 40
+        height: 40,
+        marginHorizontal: '5%'
     },
     submitBtn: {
         flex: 1,
-        backgroundColor: '#3cbfad',
+        backgroundColor: '#A60A0A',
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 5
     },
     miniImg: {
-        flex: .7,
+        flex: .5,
         backgroundColor: '#80808047',
         width: 140,
         alignSelf: 'center',
@@ -199,7 +216,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignSelf: 'center',
         alignItems: 'center',
-        backgroundColor: '#3cbfadc5',
+        backgroundColor: '#A60A0A',
         elevation: 5,
         width: 220,
         height: 35,
@@ -227,7 +244,7 @@ const styles = StyleSheet.create({
         fontSize: 15
     },
     picker: {
-        height: 60
+        height: '5%',
     },
     map: {
         flex: .2,
@@ -267,16 +284,29 @@ const styles = StyleSheet.create({
         marginHorizontal: 20
     },
     backButton: {
-        alignSelf: 'flex-start'
+        alignSelf: 'flex-start',
+        elevation: 3,
+        marginLeft: '2%'
     },
     preco: {
         borderWidth: 1,
-        height: 30,
-        paddingLeft: 10
+        height: '20%',
+        paddingLeft: 10,
+        borderRadius: 8,
+        borderColor: '#BFBFBF'
+    },
+    inputMarca: {
+        borderWidth: 1,
+        height: '20%',
+        paddingLeft: 10,
+        borderRadius: 8,
+        borderColor: '#BFBFBF',
+        marginBottom: '3%'
     },
     label: {
         fontSize: 20,
-        marginBottom: 5
+        marginBottom: 5,
+        fontWeight: 'bold'
     },
     textFieldContainer: {
         flex: .4,
@@ -296,7 +326,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignSelf: 'center',
         alignItems: 'center',
-        backgroundColor: '#3cbfadc5',
+        backgroundColor: '#F2BB13',
         elevation: 5,
         width: 150,
         height: 35,

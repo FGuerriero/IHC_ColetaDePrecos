@@ -11,35 +11,40 @@ function Login(props) {
         <View style={styles.container}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>COLETOR DE PREÇOS</Text>
+                    <Image 
+                        source={require('../../../assets/LOGO_coletaPreços.png')}
+                        resizeMode= 'contain'
+                    />
                 </View>
 
                 <View style={styles.loginForm}>
-                    <Text style={styles.label}> Login: </Text>
                     <TextInput
                         style={styles.input}
-                        placeholder={'User'}
+                        placeholder={'insira seu e-mail'}
                         onChangeText={inputLogin => setLogin(inputLogin)}
                     />
-                    <Text style={styles.label}> Password: </Text>
                     <TextInput
                         style={styles.input}
-                        placeholder={'*********'}
+                        placeholder={'insira sua senha'}
                         onChangeText={inputPass => setPassword(inputPass)}
                         secureTextEntry={true}
                     />
                 </View>
                 
                 <View style={styles.formButtons}>
-                    <TouchableOpacity style={styles.btnLogin} color='#3cbfad' onPress={ () => {
+                    <TouchableOpacity style={styles.btnLogin} onPress={ () => {
                         setLoading(true)
                         setTimeout( () => {
                             props.handleLogin(true)
                         },3500)
                     }}>
-                        <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'white' }}>Login</Text>
+                        <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'white' }}>LOGIN</Text>
                     </TouchableOpacity>
-                <ActivityIndicator animating={loading} size="large" color="#3cbfad"/>
+                    <Text style={{fontSize: 15, marginBottom: '16%'}}>Esqueci minha Senha</Text>
+                    <TouchableOpacity style={styles.btnNovaConta} color='#3cbfad' >
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>NOVA CONTA</Text>
+                    </TouchableOpacity>
+                    <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>
                 </View>
                 
             </View>
@@ -61,21 +66,13 @@ const styles = StyleSheet.create({
         // borderColor: '#000',
         // borderWidth: 5
     },
-    title: {
-        flex: .3,
-        marginTop: 10,
-        fontWeight: 'bold',
-        fontSize: 30,
-        color: '#3cbfad',
-        textAlign: 'center',
-        // borderColor: '#000',
-        // borderWidth: 5
+    logo: {
     },
     loginForm: {
-        flex: .35,
+        flex: .2,
         justifyContent: 'center',
-        marginTop: 20,
-        marginBottom: 10
+        marginTop: '2%',
+        marginBottom: '1%',
     },
     label: {
         fontSize: 20,
@@ -88,11 +85,11 @@ const styles = StyleSheet.create({
         fontSize: 15,
         borderColor: '#d3d3d3',
         borderWidth: 1,
-        width: 300,
-        height: 35,
+        width: '70%',
+        height: '28%',
         textAlign: 'center',
         alignSelf: 'center',
-        marginTop: 5
+        marginBottom: '7%'
     },
     formButtons: {
         flex: .3,
@@ -100,13 +97,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     btnLogin: {
-        backgroundColor: '#3cbfad',
+        backgroundColor: '#A60A0A',
         borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 10,
-        width: 300,
-        height:45,
+        width: '70%',
+        height: '22%',
         elevation: 5
-    }
+    },
+    btnNovaConta: {
+        backgroundColor: '#F2BB13',
+        borderRadius: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
+        width: '50%',
+        height: '20%',
+        elevation: 5
+    },
 })

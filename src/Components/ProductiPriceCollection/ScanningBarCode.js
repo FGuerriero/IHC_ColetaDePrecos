@@ -23,7 +23,7 @@ export default function ScanBarCode(props) {
     <View style={styles.container}>
       <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => props.handleScannState(false)}>
-              <AntDesign name="leftcircle" size={50} color='#3cbfad' />
+              <AntDesign name="leftcircle" size={50} color='#80808070' />
           </TouchableOpacity>
       </View>
       <View style={styles.barCodeContainer}>
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'center',
     alignItems: 'center',
-    backgroundColor: '#3cbfadc5',
+    backgroundColor: '#A60A0A',
     elevation: 5,
     width: 300,
     height: 50,
