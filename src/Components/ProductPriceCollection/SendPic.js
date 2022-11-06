@@ -7,8 +7,9 @@ import TakePic from './TakePic';
 import { AntDesign } from '@expo/vector-icons';
 import CurrencyInput from 'react-native-currency-input';
 import ScanBarCode from './ScanningBarCode';
+import Header from '../Header/Header';
 
-export default function SendPic(props) {
+export default function SendPic({ navigation }) {
     const [startCamera, setStartCamera] = useState(false)
     const [startScannCodeBar, setStartScannCodeBar] = useState(false)
     const [photo, setPhoto] = useState(null)
@@ -37,7 +38,6 @@ export default function SendPic(props) {
         if (status !== 'granted' && photo === null) {
             setLocationErrorMsg('Permission to access location was denied');
             console.log('GPS location: ', locationErrorMsg)
-            return;
         }
 
         let myLocation = await Location.getCurrentPositionAsync({})
@@ -69,7 +69,7 @@ export default function SendPic(props) {
         setLoading(true)
 
         setTimeout(() => {
-            props.handleNewPic(false)
+            navigation.navigate('Home')
             Alert.alert("Coleta de Preço do Produto realizada com sucesso!")
         }, 3500)
 
@@ -81,13 +81,9 @@ export default function SendPic(props) {
                 <TakePic handleCamState={setStartCamera} photoMini={setPhoto}/> : 
                 startScannCodeBar? <ScanBarCode handleScannState={setStartScannCodeBar} handleBarCode={setBarCode}/>:(
                 <View style={styles.subContainer}>
+                    <Header />
                     <View style={styles.header}>
-                        <Image
-                            source={require('../../../assets/header.png')} 
-                            resizeMode= 'stretch'
-                            style={{height: '50%', width: '100%'}}
-                        />
-                        <TouchableOpacity style={styles.backButton} onPress={() => props.handleNewPic(false)}>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
                             <AntDesign name="leftcircle" size={40} color='#80808070' />
                         </TouchableOpacity>
                     </View>
@@ -181,12 +177,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     subContainer: {
-        flex: 1,
-        marginTop: '6%'
+        flex: 1
     },
     header: {
-        flex: .17,
-        justifyContent: 'space-between'
+        flex: .08,
+        justifyContent: 'space-between',
+        marginTop: '4%',
+        // borderWidth: 1,
+        // borderColor: '#000'
     },
     body: {
         flex: .8,

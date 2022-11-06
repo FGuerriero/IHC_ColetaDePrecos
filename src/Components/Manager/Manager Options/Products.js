@@ -2,22 +2,22 @@ import React, {useState} from 'react';
 import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 
-import Header from '../Header/Header';
+import Header from '../../Header/Header';
 
-function CheckList({navigation}) {
+function Products({navigation}) {
 
 
     return (
         
         <View style={styles.container}>
-            <Header/>
+            <Header />
             <View style={styles.backSearch}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
                 </TouchableOpacity>
                 <View style={styles.input}>
                     <Image 
-                        source={require('../../../assets/Lupa_BarraDePesquisa.png')} 
+                        source={require('../../../../assets/Lupa_BarraDePesquisa.png')} 
                         resizeMode= 'cover'
                         style={{height: '100%'}}
                     />
@@ -38,7 +38,7 @@ function CheckList({navigation}) {
     );
 }
 
-export default CheckList;
+export default Products;
 
 const styles = StyleSheet.create({
     container: {

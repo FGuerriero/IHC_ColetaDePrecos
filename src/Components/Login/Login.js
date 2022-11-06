@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Alert, View, ActivityIndicator, Image, TextInput } from 'react-native';
 
-function Login(props) {
+function Login({ navigation }) {
     const [login, setLogin] = useState(null)
     const [password, setPassword] = useState(null)
     const [createAccount, setCreateAccount] = useState(false)
@@ -35,8 +35,10 @@ function Login(props) {
                     <TouchableOpacity style={styles.btnLogin} onPress={ () => {
                         setLoading(true)
                         setTimeout( () => {
-                            props.handleLogin(true)
-                        },3500)
+                            // props.handleLogin(true)
+                            navigation.navigate('Home')
+                            setLoading(false)
+                        },10)
                     }}>
                         <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'white' }}>LOGIN</Text>
                     </TouchableOpacity>

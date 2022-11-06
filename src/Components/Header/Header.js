@@ -1,9 +1,11 @@
+import { TabRouter } from '@react-navigation/native';
 import React, {useState} from 'react';
-import { Text, StyleSheet, TouchableHighlight, View, Image } from 'react-native';
+import { Text, StyleSheet, TouchableHighlight, View, Image, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native'
 
 function Header() {
     const [userName, setUserName] = useState('Visitante')
-    const [conectionStatus, setConectionStatus] = useState('Online')
+    const navigation = useNavigation()
 
     return (
         <View style={styles.container}>
@@ -15,15 +17,16 @@ function Header() {
                 />
             </TouchableHighlight>
             <View style={styles.headerText}>
-                <Text style={styles.text}>
-                    {userName}
-                </Text>
-                <Text style={styles.text}>
-                    |
-                </Text>
-                <Text style={styles.text}>
-                    {conectionStatus}
-                </Text>
+                <TouchableOpacity>
+                    <Text style={styles.text}>
+                        {userName}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                    <Text style={styles.text}>
+                        Sair
+                    </Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -64,8 +67,9 @@ const styles = StyleSheet.create({
     headerText: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        borderColor: '#f57',
-        borderWidth: 3,
-        width: '80%'
+        // borderColor: '#f57',
+        // borderWidth: 3,
+        width: '80%',
+        marginLeft: '2%'
     }
 })
