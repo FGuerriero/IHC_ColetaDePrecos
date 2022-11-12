@@ -9,7 +9,7 @@ import CurrencyInput from 'react-native-currency-input';
 import ScanBarCode from './ScanningBarCode';
 import Header from '../Header/Header';
 
-export default function SendPic({ navigation }) {
+export default function SendPic({ route, navigation }) {
     const [startCamera, setStartCamera] = useState(false)
     const [startScannCodeBar, setStartScannCodeBar] = useState(false)
     const [photo, setPhoto] = useState(null)
@@ -42,6 +42,15 @@ export default function SendPic({ navigation }) {
 
         let myLocation = await Location.getCurrentPositionAsync({})
         setLocation(myLocation)
+
+        //-----------------Verifica se veio de CheckList-----------------
+        if(route.params){
+            setBarCode(route.params.itemBarCode)
+            setProduto(route.params.itemCategory)
+            setLoja(route.params.storeName)
+            setMarca(route.params.itemBrand)
+            setValue(route.params.itemPrice)
+        }
     },[])
 
     const sendInformation = async () => {
@@ -83,7 +92,7 @@ export default function SendPic({ navigation }) {
                 <View style={styles.subContainer}>
                     <Header />
                     <View style={styles.header}>
-                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                             <AntDesign name="leftcircle" size={40} color='#80808070' />
                         </TouchableOpacity>
                     </View>
@@ -112,12 +121,12 @@ export default function SendPic({ navigation }) {
                         >
                             <Picker.Item label='Selecione Produto' value='notSelected' key={0}/>
                             <Picker.Item label='Pão Francês' value='paoFrances' key={1}/>
-                            <Picker.Item label='Arroz' value='arroz' key={2}/>
-                            <Picker.Item label='Feijão' value='feijao' key={3}/>
+                            <Picker.Item label='Arroz' value='Arroz' key={2}/>
+                            <Picker.Item label='Feijão' value='Feijão' key={3}/>
                             <Picker.Item label='Linguiça Calabreza' value='linguicaCalabreza' key={4}/>
                             <Picker.Item label='Leite' value='leite' key={5}/>
-                            <Picker.Item label='Livro' value='livro' key={6}/>
-                            <Picker.Item label='Caderno' value='caderno' key={7}/>
+                            <Picker.Item label='Macarrão' value='Macarrão' key={6}/>
+                            <Picker.Item label='Maionese' value='Maionese' key={7}/>
                         </Picker>
 
                         <Picker
@@ -131,6 +140,9 @@ export default function SendPic({ navigation }) {
                             <Picker.Item label='Dia Mutinga' value='diaMutinga' key={3}/>
                             <Picker.Item label='Pão de Açucar Vila Mariana' value='paoDeAcucarVilaMAriana' key={4}/>
                             <Picker.Item label='Carrefour Colônia Alemã' value='carrefourColoniaAlema' key={5}/>
+                            <Picker.Item label='Carrefour Pirituba' value='Carrefour Pirituba' key={6}/>
+                            <Picker.Item label='Carrefour Anhanguera' value='Carrefour Anhanguera' key={7}/>
+                            <Picker.Item label='Extra Lapa' value='Extra Lapa' key={8}/>
                         </Picker>
 
                         <View style={styles.textFieldContainer}>
@@ -139,6 +151,7 @@ export default function SendPic({ navigation }) {
                                 style={styles.inputMarca}
                                 placeholder={'Digite a marca do produto'}
                                 onChangeText={inputMarca => setMarca(inputMarca)}
+                                value={marca==='notSelected'? undefined : marca}
                             />
                             <Text style={styles.label}> Preço: </Text>
                             <CurrencyInput

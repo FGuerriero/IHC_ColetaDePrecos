@@ -6,102 +6,102 @@ import Header from '../Header/Header';
 
 const checkListItems = [
     {
+        id: 1,
         itemCategory: 'Maionese',
         itemBrand: 'My Oh Nese!',
         storeName: 'Carrefour Pirituba',
         itemPrice: 5.6,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 2,
         itemCategory: 'Feijão',
         itemBrand: 'Camil',
         storeName: 'Carrefour Pirituba',
-        itemPrice: 6.6,
-        collected: false
+        itemPrice: null,
+        collected: false,
+        itemBarCode: null
     },{
+        id: 3,
         itemCategory: 'Arroz',
         itemBrand: 'Prato Fino',
         storeName: 'Carrefour Anhanguera',
         itemPrice: 12.99,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 4,
         itemCategory: 'Macarrão',
         itemBrand: 'Renata',
         storeName: 'Extra Lapa',
         itemPrice: 2.50,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 5,
         itemCategory: 'Maionese',
         itemBrand: 'My Oh Nese!',
         storeName: 'Carrefour Pirituba',
         itemPrice: 5.6,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 6,
         itemCategory: 'Feijão',
         itemBrand: 'Camil',
         storeName: 'Carrefour Pirituba',
-        itemPrice: 6.6,
-        collected: false
+        itemPrice: null,
+        collected: false,
+        itemBarCode: null
     },{
+        id: 7,
         itemCategory: 'Arroz',
         itemBrand: 'Prato Fino',
         storeName: 'Carrefour Anhanguera',
         itemPrice: 12.99,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 8,
         itemCategory: 'Macarrão',
         itemBrand: 'Renata',
         storeName: 'Extra Lapa',
         itemPrice: 2.50,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 9,
         itemCategory: 'Maionese',
         itemBrand: 'My Oh Nese!',
         storeName: 'Carrefour Pirituba',
         itemPrice: 5.6,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 10,
         itemCategory: 'Feijão',
         itemBrand: 'Camil',
         storeName: 'Carrefour Pirituba',
-        itemPrice: 6.6,
-        collected: false
+        itemPrice: null,
+        collected: false,
+        itemBarCode: null
     },{
+        id: 11,
         itemCategory: 'Arroz',
         itemBrand: 'Prato Fino',
         storeName: 'Carrefour Anhanguera',
         itemPrice: 12.99,
-        collected: true
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
     },{
+        id: 12,
         itemCategory: 'Macarrão',
         itemBrand: 'Renata',
         storeName: 'Extra Lapa',
         itemPrice: 2.50,
-        collected: true
-    },{
-        itemCategory: 'Maionese',
-        itemBrand: 'My Oh Nese!',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: 5.6,
-        collected: true
-    },{
-        itemCategory: 'Feijão',
-        itemBrand: 'Camil',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: 6.6,
-        collected: false
-    },{
-        itemCategory: 'Arroz',
-        itemBrand: 'Prato Fino',
-        storeName: 'Carrefour Anhanguera',
-        itemPrice: 12.99,
-        collected: true
-    },{
-        itemCategory: 'Macarrão',
-        itemBrand: 'Renata',
-        storeName: 'Extra Lapa',
-        itemPrice: 2.50,
-        collected: true
-    }
+        collected: true,
+        itemBarCode: '@#45wkm@#$%tQç.tvWk4p'
+    },
 ]
 
 function CheckList({navigation}) {
@@ -112,7 +112,7 @@ function CheckList({navigation}) {
         <View style={styles.container}>
             <Header/>
             <View style={styles.backSearch}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
                 </TouchableOpacity>
                 <View style={styles.input}>
@@ -171,7 +171,7 @@ function CheckList({navigation}) {
                                     </View>
                                     <View style={styles.priceContainer}>
                                         <Text style={styles.itemPrice}>
-                                            R$ {item.itemPrice.toFixed(2).replace('.',',')}
+                                            R$ {item.itemPrice ? item.itemPrice.toFixed(2).replace('.',',') : '--'}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -182,13 +182,17 @@ function CheckList({navigation}) {
                                                 <TouchableOpacity style={styles.clearButton}>
                                                     <Text style={styles.textButton}>Limpar</Text>
                                                 </TouchableOpacity>
-                                                <TouchableOpacity style={styles.editButton}>
+                                                <TouchableOpacity style={styles.editButton} onPress={() => {
+                                                    navigation.navigate('SendPic', item)
+                                                }}>
                                                     <Text style={styles.textButton}>Editar</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         :
                                             <View style={styles.itemButtons}>
-                                                <TouchableOpacity style={styles.collectButton}>
+                                                <TouchableOpacity style={styles.collectButton} onPress={() => {
+                                                    navigation.navigate('SendPic', item)
+                                                }}>
                                                     <Text style={styles.textButton}>Coletar</Text>
                                                 </TouchableOpacity>
                                             </View>

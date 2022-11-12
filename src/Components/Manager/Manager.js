@@ -11,7 +11,7 @@ function Manager({navigation}) {
         <View style={styles.container}>
             <Header />
             <View style={styles.backSearch}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
                 </TouchableOpacity>
             </View>
