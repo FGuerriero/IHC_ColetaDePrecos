@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, ImageBackground } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, ImageBackground, DeviceEventEmitter } from 'react-native';
 
 export default function CameraPreview(props) {
     const uriPhoto = props.photo.uri
@@ -11,7 +11,15 @@ export default function CameraPreview(props) {
     
     const handleSave = () => {
         props.preview(false)
+
+        props.handlePreview()
     }
+
+    useEffect(() => {
+        return () => {
+            DeviceEventEmitter.removeAllListeners("event.previewSave")
+        }
+    }, [])
 
     return (
         <View style={styles.container}>

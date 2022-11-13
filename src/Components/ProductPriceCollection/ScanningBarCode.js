@@ -7,9 +7,13 @@ export default function ScanBarCode(props) {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
 
-  useEffect(async () => {
-    const { status } = await BarCodeScanner.requestPermissionsAsync();
-    setHasPermission(status === 'granted')
+  useEffect(() => {
+    const scanningBarCode = async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === 'granted')
+    }
+
+    scanningBarCode()
   },[])
 
   const handleBarCodeScanned = ({ type, data }) => {

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Camera } from 'expo-camera';
 import * as Location from 'expo-location';
-import { SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert, View, ImageBackground, Image, TextInput, ActivityIndicator } from 'react-native';
+import { SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert, View, ScrollView, ImageBackground, Image, TextInput, ActivityIndicator, DeviceEventEmitter } from 'react-native';
 import { Picker } from '@react-native-picker/picker'
-import TakePic from './TakePic';
 import { AntDesign } from '@expo/vector-icons';
 import CurrencyInput from 'react-native-currency-input';
 import ScanBarCode from './ScanningBarCode';
@@ -26,30 +25,39 @@ export default function SendPic({ route, navigation }) {
         const {status} = await Camera.requestCameraPermissionsAsync()
 
         if(status === 'granted'){
-            setStartCamera(true)
+            navigation.push('TakePic') 
         }else{
             Alert.alert("O App não tem acesso á Camera. \nEntre nas configurações do dispositivo e habilite o acesso ao Coletor de preços!")
         }
     }
 
+    DeviceEventEmitter.addListener("event.pictureCapture", (eventData) => {
+        setPhoto(eventData.capturedImage)
+    });
+
     //Reload Hook
-    useEffect(async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted' && photo === null) {
-            setLocationErrorMsg('Permission to access location was denied');
-            console.log('GPS location: ', locationErrorMsg)
+    useEffect( () => {
+        const updateLocate = async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted' && photo === null) {
+                setLocationErrorMsg('Permission to access location was denied');
+                console.log('GPS location: ', locationErrorMsg)
+            }
+    
+            let myLocation = await Location.getCurrentPositionAsync({})
+            setLocation(myLocation)
         }
 
-        let myLocation = await Location.getCurrentPositionAsync({})
-        setLocation(myLocation)
+        updateLocate()
 
         //-----------------Verifica se veio de CheckList-----------------
         if(route.params){
-            setBarCode(route.params.itemBarCode)
+            route.params.itemBarCode ? setBarCode(route.params.itemBarCode) : undefined
             setProduto(route.params.itemCategory)
             setLoja(route.params.storeName)
             setMarca(route.params.itemBrand)
-            setValue(route.params.itemPrice)
+            route.params.itemPrice ? setValue(route.params.itemPrice) : undefined
+            setPhoto({uri: route.params.url})
         }
     },[])
 
@@ -78,7 +86,7 @@ export default function SendPic({ route, navigation }) {
         setLoading(true)
 
         setTimeout(() => {
-            navigation.navigate('Home')
+            navigation.goBack()
             Alert.alert("Coleta de Preço do Produto realizada com sucesso!")
         }, 3500)
 
@@ -86,8 +94,7 @@ export default function SendPic({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            {startCamera ?
-                <TakePic handleCamState={setStartCamera} photoMini={setPhoto}/> : 
+            {
                 startScannCodeBar? <ScanBarCode handleScannState={setStartScannCodeBar} handleBarCode={setBarCode}/>:(
                 <View style={styles.subContainer}>
                     <Header />

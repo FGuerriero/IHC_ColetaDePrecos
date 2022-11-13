@@ -16,16 +16,16 @@ function Manager({navigation}) {
                 </TouchableOpacity>
             </View>
             <View style={styles.managerOptions}>
-                <TouchableOpacity style={styles.button} >
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Products')}>
                     <Text style={styles.text}>Produtos</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Stores')}>
                     <Text style={styles.text}>Lojas</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Devices')}>
                     <Text style={styles.text}>Dispositivos</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Users')}>
                     <Text style={styles.text}>Usuários</Text>
                 </TouchableOpacity>
             </View>

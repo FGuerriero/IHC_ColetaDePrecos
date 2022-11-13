@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Camera } from 'expo-camera';
-import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, DeviceEventEmitter, TouchableOpacity} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import CameraPreview from './CameraPreview';
 
-export default function TakePic(props) {
+export default function TakePic({ route, navigation }) {
     const [previewVisible, setPreviewVisble] = useState(false)
     const [capturedImage, setCapturedImage] = useState(null)
     const [camRatio, setCamRatio] = useState('4:3')
@@ -18,21 +18,29 @@ export default function TakePic(props) {
         setCapturedImage(photo)
     }
 
-    const handleExitCam = () => {
-        props.handleCamState(false)
-    }
-
     const setRatio = async () => {
         const suportedRatios = await camera.getSupportedRatiosAsync()
         setCamRatio(suportedRatios[suportedRatios.length - 1])
     }
 
+    const preViewavePic = () => {
+        DeviceEventEmitter.emit("event.pictureCapture", {capturedImage});
+        navigation.goBack()
+        return
+    }
+
+    DeviceEventEmitter.addListener("event.previewSave", () => {
+    });
+
     useEffect(() => {
         if(capturedImage && !previewVisible) {
-            props.handleCamState(false)
-            props.photoMini(capturedImage)
+            
         }
-    })
+
+        return () => {
+            DeviceEventEmitter.removeAllListeners("event.pictureCapture")
+        }
+    }, [])
     
     return (
         <View style={styles.container}>
@@ -42,6 +50,7 @@ export default function TakePic(props) {
                     photo={capturedImage}
                     setPhoto={setCapturedImage}
                     preview={setPreviewVisble}
+                    handlePreview={preViewavePic}
                 />
             ) : (
                 <Camera 
@@ -60,7 +69,7 @@ export default function TakePic(props) {
                         onPress={__takePicture}
                         />
                         
-                        <TouchableOpacity style={styles.backButton} onPress={handleExitCam}>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                             <AntDesign name="leftcircle" size={40} color="white" />
                         </TouchableOpacity>
 
