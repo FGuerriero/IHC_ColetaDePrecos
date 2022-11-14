@@ -68,6 +68,9 @@ function Products({navigation}) {
                     />
                 </View>
             </View>
+            <TouchableOpacity style={styles.btnNovoProduto}>
+                <Text style={styles.txtNovoProduto}>NOVO PRODUTO</Text>
+            </TouchableOpacity>
             <ScrollView style={styles.scrollContainer}>
             {
                     listItems.map( (item,index) => {
@@ -91,31 +94,15 @@ function Products({navigation}) {
                                             styles.itemContainer
                             }>
                                 <TouchableOpacity style={styles.itemTouchable} onPress={() => {setCurrentIndex(index)}}>
-                                    <View style={styles.checkBoxContainer}>
-                                        {
-                                            item.collected?
-                                            <Image 
-                                                source={require('../../../../assets/checkedBox.png')} 
-                                            /> :
-                                            <Image 
-                                                source={require('../../../../assets/uncheckedBox.png')}
-                                            />
-                                        }
-                                    </View>
                                     <View style={styles.textContainer}>
                                         <Text style={[styles.itemTitle,]}>
-                                            {item.itemCategory}
+                                            {item.productType}
                                         </Text>
                                         <Text style={styles.itemSubtext}>
-                                            {item.itemBrand}
+                                            {item.productBrand}
                                         </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.storeName}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.priceContainer}>
-                                        <Text style={styles.itemPrice}>
-                                            R$ {item.itemPrice ? item.itemPrice.toFixed(2).replace('.',',') : '--'}
+                                        <Text style={styles.itemDescription}>
+                                            {item.productDescription.substring(0,50)+'...'}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -204,5 +191,36 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         flex: 3,
+        marginLeft: '7%'
+    },
+    itemTitle: {
+        fontSize: 20.9,
+        lineHeight: 25.47,
+        fontWeight: '900',
+        color: '#352727'
+    },
+    itemSubtext: {
+        fontSize: 13.46,
+        lineHeight: 16.4,
+        fontWeight: '400',
+        color: '#6F5F5F'
+    },
+    itemDescription : {
+        fontSize: 11,
+        lineHeight: 16.4,
+        fontWeight: '400',
+        color: '#6F5F5F'
+    },
+    btnNovoProduto: {
+        backgroundColor: '#A60A0A',
+        margin: '5%',
+        height: '5%',
+        justifyContent: 'center'
+    },
+    txtNovoProduto: {
+        fontSize: 19.76,
+        fontWeight: '700',
+        alignSelf: 'center',
+        color: '#fff'
     }
 })
