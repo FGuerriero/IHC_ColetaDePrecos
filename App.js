@@ -12,6 +12,7 @@ import Products from './src/Components/Manager/Manager Options/Products';
 import Stores from './src/Components/Manager/Manager Options/Stores';
 import Devices from './src/Components/Manager/Manager Options/Devices'
 import Users from './src/Components/Manager/Manager Options/Users';
+import ProductsCRUD from './src/Components/Manager/Manager Options/CRUDs/ProductsCRUD';
 
 export default function App() {
   // const [loginValidation, setLoginValidation] = useState(false)
@@ -27,6 +28,7 @@ export default function App() {
         <Stack.Screen name="CheckList" component={CheckList} />
         <Stack.Screen name="Manager" component={Manager} />
           <Stack.Screen name="Products" component={Products} />
+            <Stack.Screen name='ProductsCRUD' component={ProductsCRUD} />
           <Stack.Screen name="Stores" component={Stores} />
           <Stack.Screen name="Devices" component={Devices} />
           <Stack.Screen name="Users" component={Users} />

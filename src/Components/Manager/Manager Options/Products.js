@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 
 import Header from '../../Header/Header';
@@ -39,12 +39,45 @@ const productsList = [
 function Products({navigation}) {
     const [listItems, setListItems] = useState(productsList)
     const [currentIndex, setCurrentIndex] = useState(null)
-    const [clearModalVisible, setClearModalVisible] = useState(false)
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
 
     return (
         
         <View style={styles.container}>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={deleteModalVisible}
+                onRequestClose={() => {
+                  Alert.alert("Modal has been closed.");
+                  setDeleteModalVisible(!deleteModalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>Deseja realmente limpar os dados Coletados?:</Text>
+                        <Text style={styles.modalProductText}>{currentIndex ? productsList[currentIndex].productType : undefined}, {currentIndex ? productsList[currentIndex].productBrand : undefined} </Text>
+                        <View style={styles.modalButtonsContainer}>
+                            <Pressable
+                                style={[styles.button, styles.buttonConfirm]}
+                                onPress={() => {
+                                    // --------------- Handle Request to BackEnd
+                                    setDeleteModalVisible(!deleteModalVisible)
+                                }}
+                                >
+                                <Text style={styles.modalButtonTextStyle}>Limpar</Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.button, styles.buttonCancel]}
+                                onPress={() => setDeleteModalVisible(!deleteModalVisible)}
+                                >
+                                <Text style={styles.modalButtonTextStyle}>Cancelar</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
             <Header />
             <View style={styles.backSearch}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -68,7 +101,7 @@ function Products({navigation}) {
                     />
                 </View>
             </View>
-            <TouchableOpacity style={styles.btnNovoProduto}>
+            <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('ProductsCRUD')}>
                 <Text style={styles.txtNovoProduto}>NOVO PRODUTO</Text>
             </TouchableOpacity>
             <ScrollView style={styles.scrollContainer}>
@@ -108,23 +141,14 @@ function Products({navigation}) {
                                 </TouchableOpacity>
                                 {
                                     index === currentIndex ?
-                                        item.collected ?
                                             <View style={styles.itemButtons}>
-                                                <TouchableOpacity style={styles.clearButton} onPress={() => setClearModalVisible(!clearModalVisible)}>
-                                                    <Text style={styles.textButton}>Limpar</Text>
+                                                <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
+                                                    <Text style={styles.textButton}>Deletar</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                    navigation.push('SendPic', item)
+                                                    navigation.push('ProductsCRUD', item)
                                                 }}>
                                                     <Text style={styles.textButton}>Editar</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        :
-                                            <View style={styles.itemButtons}>
-                                                <TouchableOpacity style={styles.collectButton} onPress={() => {
-                                                    navigation.push('SendPic', item)
-                                                }}>
-                                                    <Text style={styles.textButton}>Coletar</Text>
                                                 </TouchableOpacity>
                                             </View>
                                     :
@@ -222,5 +246,89 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         alignSelf: 'center',
         color: '#fff'
-    }
+    },
+    itemButtons: {
+        flexDirection: 'row',
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40
+    },
+    deleteButton: {
+        backgroundColor: '#A60A0A',
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40
+    },
+    editButton: {
+        backgroundColor: '#F2BB13',
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40
+    },
+    textButton: {
+        color: '#fff',
+        fontSize: 20.58,
+        fontWeight: '600'
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+      },
+      modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2
+        },
+      },
+      modalText: {
+        marginBottom: 15,
+        textAlign: "center",
+        color: '#352727',
+        fontWeight: '400',
+        fontSize: 21
+      },
+      modalProductText: {
+        marginBottom: 15,
+        textAlign: "center",
+        color: '#352727',
+        fontWeight: 'bold',
+        fontSize: 21
+      },
+      buttonConfirm: {
+        backgroundColor: "#A60A0A",
+      },
+      buttonCancel: {
+        backgroundColor: "#4FAE2D",
+      },
+      modalButtonTextStyle: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center",
+        fontSize: 21,
+        fontWeight: '700',
+        marginHorizontal: 15
+      },
+      button: {
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2
+      },
+      modalButtonsContainer: {
+        flexDirection: 'row',
+        // borderColor: '#000',
+        // borderWidth: 2,
+        width: 280,
+        justifyContent: 'space-between'
+      }
 })
