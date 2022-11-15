@@ -13,6 +13,9 @@ import Stores from './src/Components/Manager/Manager Options/Stores';
 import Devices from './src/Components/Manager/Manager Options/Devices'
 import Users from './src/Components/Manager/Manager Options/Users';
 import ProductsCRUD from './src/Components/Manager/Manager Options/CRUDs/ProductsCRUD';
+import StoresCRUD from './src/Components/Manager/Manager Options/CRUDs/StoresCRUD';
+import DevicesCRUD from './src/Components/Manager/Manager Options/CRUDs/DevicesCRUD';
+import UsersCRUD from './src/Components/Manager/Manager Options/CRUDs/UsersCRUD';
 
 export default function App() {
   // const [loginValidation, setLoginValidation] = useState(false)
@@ -29,6 +32,9 @@ export default function App() {
         <Stack.Screen name="Manager" component={Manager} />
           <Stack.Screen name="Products" component={Products} />
             <Stack.Screen name='ProductsCRUD' component={ProductsCRUD} />
+            <Stack.Screen name='StoresCRUD' component={StoresCRUD} />
+            <Stack.Screen name='DevicesCRUD' component={DevicesCRUD} />
+            <Stack.Screen name='UsersCRUD' component={UsersCRUD} />
           <Stack.Screen name="Stores" component={Stores} />
           <Stack.Screen name="Devices" component={Devices} />
           <Stack.Screen name="Users" component={Users} />

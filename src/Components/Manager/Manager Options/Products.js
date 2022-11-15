@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 
 import Header from '../../Header/Header';
@@ -38,9 +38,18 @@ const productsList = [
 
 function Products({navigation}) {
     const [listItems, setListItems] = useState(productsList)
-    const [currentIndex, setCurrentIndex] = useState(null)
+    const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
+    DeviceEventEmitter.addListener("event.productSavedResponse", (apiResponse) => {
+        if(apiResponse==='success'){
+            Alert.alert("Dados gravados com sucesso!")
+        }else if(apiResponse==='fail'){
+            Alert.alert("Falha ao tentar gravar Produto!! \n Tente novamente mais tarde.")
+        }
+        setTimeout(() => {
+        }, 3000)
+    });
 
     return (
         
@@ -50,13 +59,13 @@ function Products({navigation}) {
                 transparent={true}
                 visible={deleteModalVisible}
                 onRequestClose={() => {
-                  Alert.alert("Modal has been closed.");
+                  //Alert.alert("Modal has been closed.");
                   setDeleteModalVisible(!deleteModalVisible);
                 }}
             >
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Deseja realmente limpar os dados Coletados?:</Text>
+                        <Text style={styles.modalText}>Deseja realmente deletar o Produto?:</Text>
                         <Text style={styles.modalProductText}>{currentIndex ? productsList[currentIndex].productType : undefined}, {currentIndex ? productsList[currentIndex].productBrand : undefined} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
@@ -66,7 +75,7 @@ function Products({navigation}) {
                                     setDeleteModalVisible(!deleteModalVisible)
                                 }}
                                 >
-                                <Text style={styles.modalButtonTextStyle}>Limpar</Text>
+                                <Text style={styles.modalButtonTextStyle}>Deletar</Text>
                             </Pressable>
                             <Pressable
                                 style={[styles.button, styles.buttonCancel]}

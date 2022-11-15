@@ -1,19 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter } from 'react-native';
+import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivitstoreNameyIndicator, DeviceEventEmitter, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
-import { NavigationHelpersContext } from '@react-navigation/native';
 
-const BRANDS = ['Camil', 'Kicaldo', 'Prato Fino', 'Dona Benta', 'Renata', 'Parmalate', 'My Oh Nese!']
-
-function ProductsCRUD({route, navigation}) {
-    const [productName, setProductName] = useState(null)
-    const [productBrand, setProductBrand] = useState(null)
-    const [productDescription, setProductDescription] = useState(null)
+function StoresCRUD({route, navigation}) {
+    const [storeName, setStoreName] = useState(null)
+    const [franchise, setFranchise] = useState(null)
+    const [address, setAddress] = useState(null)
     const [loadVisible, setLoadVisible] = useState(false)
 
-    const GravarProduto = () => {
+    const GravarLoja = () => {
         setLoadVisible(true)
         setTimeout(() => {
             setLoadVisible(false)
@@ -24,17 +20,17 @@ function ProductsCRUD({route, navigation}) {
             // DeviceEventEmitter.emit("event.productSavedResponse", 'success')
 
             //-----------ERROR--------------------
-            DeviceEventEmitter.emit("event.productSavedResponse", 'fail')
+            DeviceEventEmitter.emit("event.storeSavedResponse", 'fail')
 
-        },4000)
+        },1000)
         return
     }
 
     useEffect(() => {
         if(route.params){
-            setProductName(route.params.productType)
-            setProductBrand(route.params.productBrand)
-            setProductDescription(route.params.productDescription)
+            setStoreName(route.params.storeName)
+            setFranchise(route.params.franchise)
+            setAddress(route.params.fullAddress)
         }
     }, [])
 
@@ -49,34 +45,24 @@ function ProductsCRUD({route, navigation}) {
             <View style={styles.bodyContainer}>
                 <TextInput 
                     style={styles.inputText} 
-                    placeholder={'Nome do Produto'}
-                    value={productName}
-                    onChangeText={ text => setProductName(text)}
+                    placeholder={'Nome da Loja'}
+                    value={storeName}
+                    onChangeText={ text => setStoreName(text)}
                 />
-                <View style={styles.pickerContainer}>
-                    <Picker
-                        selectedValue={productBrand}
-                        onValueChange={newValue => setProductBrand(newValue)}
-                        style={styles.picker}
-                    >
-                        <Picker.Item label='Selecione Produto' value={null} key={0} style={styles.pickerItemGrey}/>
-                        {
-                            BRANDS.map((item, index) => {
-                                return (
-                                    <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
-                                )
-                            })
-                        }
-                    </Picker>
-                </View>
+                <TextInput 
+                    style={styles.inputText} 
+                    placeholder={'Franquia'}
+                    value={franchise}
+                    onChangeText={ text => setFranchise(text)}
+                />
                 <TextInput 
                     style={styles.inputTextDescription} 
-                    placeholder={'Descrição do Produto'}
-                    onChangeText={ text => setProductName(text)}
-                    value={productDescription}
+                    placeholder={'Endereço completo'}
+                    onChangeText={ text => setAddress(text)}
+                    value={address}
                     multiline={true}
                 />
-                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarProduto()}>
+                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarLoja()}>
                     <Text style={styles.txtBtnGravar}>
                     {
                         loadVisible ? 
@@ -91,7 +77,7 @@ function ProductsCRUD({route, navigation}) {
     )
 }
 
-export default ProductsCRUD;
+export default StoresCRUD;
 
 const styles = StyleSheet.create({
     container: {
@@ -117,6 +103,7 @@ const styles = StyleSheet.create({
         width: '100%',
         fontSize: 27,
         marginLeft: '2%',
+        marginBottom: '5%',
         borderColor: '#868686',
         borderWidth: 2,
         borderRadius: 9.5,
@@ -141,6 +128,10 @@ const styles = StyleSheet.create({
         borderRadius: 9.5,
         marginVertical: '10%'
     },
+    picker: {
+        //fontSize: 30,
+        marginLeft: '3%'
+    },
     btnGravar: {
         backgroundColor: '#A60A0A',
         margin: '5%',
@@ -155,10 +146,6 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         alignSelf: 'center',
         color: '#fff'
-    },
-    picker: {
-        //fontSize: 30,
-        marginLeft: '3%'
     },
     pickerItemGrey: {
         fontSize: 27,

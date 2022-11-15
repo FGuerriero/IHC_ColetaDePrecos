@@ -59,7 +59,7 @@ export default Login;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: 25
+        marginTop: '15%'
     },
     header: {
         flex: .30,

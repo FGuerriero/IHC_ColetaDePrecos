@@ -7,7 +7,7 @@ import { NavigationHelpersContext } from '@react-navigation/native';
 
 const BRANDS = ['Camil', 'Kicaldo', 'Prato Fino', 'Dona Benta', 'Renata', 'Parmalate', 'My Oh Nese!']
 
-function ProductsCRUD({route, navigation}) {
+function UsersCRUD({route, navigation}) {
     const [productName, setProductName] = useState(null)
     const [productBrand, setProductBrand] = useState(null)
     const [productDescription, setProductDescription] = useState(null)
@@ -91,7 +91,7 @@ function ProductsCRUD({route, navigation}) {
     )
 }
 
-export default ProductsCRUD;
+export default UsersCRUD;
 
 const styles = StyleSheet.create({
     container: {
@@ -141,6 +141,10 @@ const styles = StyleSheet.create({
         borderRadius: 9.5,
         marginVertical: '10%'
     },
+    picker: {
+        //fontSize: 30,
+        marginLeft: '3%'
+    },
     btnGravar: {
         backgroundColor: '#A60A0A',
         margin: '5%',
@@ -155,10 +159,6 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         alignSelf: 'center',
         color: '#fff'
-    },
-    picker: {
-        //fontSize: 30,
-        marginLeft: '3%'
     },
     pickerItemGrey: {
         fontSize: 27,
