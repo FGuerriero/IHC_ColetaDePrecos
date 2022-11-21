@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivitstoreNameyIndicator, DeviceEventEmitter, ActivityIndicator } from 'react-native';
+import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivitstoreNameyIndicator, DeviceEventEmitter, Alert, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Header from '../../../Header/Header';
 
@@ -20,7 +20,8 @@ function StoresCRUD({route, navigation}) {
             // DeviceEventEmitter.emit("event.productSavedResponse", 'success')
 
             //-----------ERROR--------------------
-            DeviceEventEmitter.emit("event.storeSavedResponse", 'fail')
+            //DeviceEventEmitter.emit("event.storeSavedResponse", 'fail')
+            Alert.alert("Falha ao tentar gravar Loja!! \n Tente novamente mais tarde.")
 
         },1000)
         return

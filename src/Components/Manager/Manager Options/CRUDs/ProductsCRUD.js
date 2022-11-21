@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter } from 'react-native';
+import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
@@ -24,7 +24,8 @@ function ProductsCRUD({route, navigation}) {
             // DeviceEventEmitter.emit("event.productSavedResponse", 'success')
 
             //-----------ERROR--------------------
-            DeviceEventEmitter.emit("event.productSavedResponse", 'fail')
+            //DeviceEventEmitter.emit("event.productSavedResponse", 'fail')
+            Alert.alert("Falha ao tentar gravar Produto!! \n Tente novamente mais tarde.")
 
         },4000)
         return

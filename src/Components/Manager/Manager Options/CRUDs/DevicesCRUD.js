@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter } from 'react-native';
+import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
@@ -26,7 +26,8 @@ function StoresCRUD({route, navigation}) {
             // DeviceEventEmitter.emit("event.productSavedResponse", 'success')
 
             //-----------ERROR--------------------
-            DeviceEventEmitter.emit("event.deviceSavedResponse", 'fail')
+            //DeviceEventEmitter.emit("event.deviceSavedResponse", 'fail')
+            Alert.alert("Falha ao tentar gravar Dispositivo!! \n Tente novamente mais tarde.")
 
         },1000)
         return

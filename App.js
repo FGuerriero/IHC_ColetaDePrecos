@@ -16,6 +16,8 @@ import ProductsCRUD from './src/Components/Manager/Manager Options/CRUDs/Product
 import StoresCRUD from './src/Components/Manager/Manager Options/CRUDs/StoresCRUD';
 import DevicesCRUD from './src/Components/Manager/Manager Options/CRUDs/DevicesCRUD';
 import UsersCRUD from './src/Components/Manager/Manager Options/CRUDs/UsersCRUD';
+import ForgotPass from './src/Components/Login/ForgotPass';
+import NewAccount from './src/Components/Login/NewAccount';
 
 export default function App() {
   // const [loginValidation, setLoginValidation] = useState(false)
@@ -25,6 +27,8 @@ export default function App() {
     <NavigationContainer style={styles.container} initialRouteName="Login">
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={Login}/>
+          <Stack.Screen name="ForgotPass" component={ForgotPass}/>
+          <Stack.Screen name="NewAccount" component={NewAccount}/>
         <Stack.Screen name="Home" component={Home}/>
         <Stack.Screen name="SendPic" component={SendPic} />
           <Stack.Screen name ="TakePic" component={TakePic} />

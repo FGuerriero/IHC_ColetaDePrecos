@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, StyleSheet, TouchableOpacity, Alert, View, ActivityIndicator, Image, TextInput } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, Alert, View, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
 
 function Login({ navigation }) {
     const [login, setLogin] = useState(null)
@@ -8,7 +8,7 @@ function Login({ navigation }) {
     const [loading, setLoading] = useState(false)
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.container}>
                 <View style={styles.header}>
                     <Image 
@@ -42,15 +42,20 @@ function Login({ navigation }) {
                     }}>
                         <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'white' }}>LOGIN</Text>
                     </TouchableOpacity>
-                    <Text style={{fontSize: 15, marginBottom: '16%'}}>Esqueci minha Senha</Text>
-                    <TouchableOpacity style={styles.btnNovaConta} color='#3cbfad' >
+                    <Text 
+                        style={{fontSize: 15, marginBottom: '16%'}}
+                        onPress={() => navigation.push('ForgotPass')}
+                    >
+                        Esqueci minha Senha
+                    </Text>
+                    <TouchableOpacity style={styles.btnNovaConta} color='#3cbfad' onPress={() => navigation.push('NewAccount')}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>NOVA CONTA</Text>
                     </TouchableOpacity>
                     <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>
                 </View>
                 
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
@@ -59,7 +64,7 @@ export default Login;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: '15%'
+        paddingTop: '25%'
     },
     header: {
         flex: .30,
@@ -73,7 +78,7 @@ const styles = StyleSheet.create({
     loginForm: {
         flex: .2,
         justifyContent: 'center',
-        marginTop: '2%',
+        marginTop: '20%',
         marginBottom: '1%',
     },
     label: {
@@ -88,10 +93,11 @@ const styles = StyleSheet.create({
         borderColor: '#d3d3d3',
         borderWidth: 1,
         width: '70%',
-        height: '28%',
+        height: '30%',
         textAlign: 'center',
         alignSelf: 'center',
-        marginBottom: '7%'
+        marginBottom: '7%',
+        borderRadius: 10
     },
     formButtons: {
         flex: .3,
