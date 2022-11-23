@@ -1,17 +1,23 @@
 import { TabRouter } from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { Text, StyleSheet, TouchableHighlight, View, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
+import { auth } from '../../config/firebase';
 
 function Header() {
     const [userName, setUserName] = useState('Visitante')
     const navigation = useNavigation()
 
+    function deslogar() {
+        auth.signOut();
+        navigation.navigate('Login');
+    }
+
     return (
         <View style={styles.container}>
             <TouchableHighlight style={styles.profileImgContainer} onPress={() => console.log("Adicionar variável para controlar Perfil")}>
-                <Image 
-                    source={require('../../../assets/profilePic.png')} 
+                <Image
+                    source={require('../../../assets/profilePic.png')}
                     // resizeMode= 'contain'
                     style={styles.profileImg}
                 />
@@ -22,7 +28,7 @@ function Header() {
                         {userName}
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                <TouchableOpacity onPress={() => deslogar()}>
                     <Text style={styles.text}>
                         Sair
                     </Text>

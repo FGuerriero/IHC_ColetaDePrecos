@@ -1,19 +1,57 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Alert, View, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
 
+import { Alerta } from '../Alerta';
+
+import { auth } from '../../config/firebase';
+import { logar } from '../../servicos/requisicoesFirebase';
+
 function Login({ navigation }) {
-    const [login, setLogin] = useState(null)
-    const [password, setPassword] = useState(null)
-    const [createAccount, setCreateAccount] = useState(false)
-    const [loading, setLoading] = useState(false)
+    const [login, setLogin] = useState('')
+    const [password, setPassword] = useState('')
+    const [createAccount, setCreateAccount] = useState(null)
+    const [loading, setLoading] = useState(null)
+
+    const [statusError, setStatusError] = useState('');
+    const [mensagemError, setMensagemError] = useState('');
+
+    useEffect(() => {
+        const estadoUsuario = auth.onAuthStateChanged(usuario => {
+            if (usuario) {
+                navigation.replace('Home')
+            }
+        })
+        return () => estadoUsuario();
+    }, [])
+
+    async function realizarLogin() {
+        console.log(login);
+        console.log(password);
+        if (login == '') {
+            setMensagemError('O login é obrigatório!');
+            setStatusError('firebase');
+        } else if (password == '') {
+            setMensagemError('A senha é obrigatória!');
+            setStatusError('firebase');
+        } else {
+            const resultado = await logar(login, password);
+            if (resultado == 'erro') {
+                setStatusError('firebase')
+                setMensagemError('Login ou senha não conferem')
+            }
+            else {
+                navigation.replace('Home')
+            }
+        }
+    }
 
     return (
         <ScrollView style={styles.container}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Image 
+                    <Image
                         source={require('../../../assets/LOGO_coletaPreços.png')}
-                        resizeMode= 'contain'
+                        resizeMode='contain'
                     />
                 </View>
 
@@ -30,20 +68,15 @@ function Login({ navigation }) {
                         secureTextEntry={true}
                     />
                 </View>
-                
+
                 <View style={styles.formButtons}>
-                    <TouchableOpacity style={styles.btnLogin} onPress={ () => {
-                        setLoading(true)
-                        setTimeout( () => {
-                            // props.handleLogin(true)
-                            navigation.navigate('Home')
-                            setLoading(false)
-                        },10)
+                    <TouchableOpacity style={styles.btnLogin} onPress={() => {
+                        realizarLogin()
                     }}>
                         <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'white' }}>LOGIN</Text>
                     </TouchableOpacity>
-                    <Text 
-                        style={{fontSize: 15, marginBottom: '16%'}}
+                    <Text
+                        style={{ fontSize: 15, marginBottom: '16%' }}
                         onPress={() => navigation.push('ForgotPass')}
                     >
                         Esqueci minha Senha
@@ -51,9 +84,12 @@ function Login({ navigation }) {
                     <TouchableOpacity style={styles.btnNovaConta} color='#3cbfad' onPress={() => navigation.push('NewAccount')}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>NOVA CONTA</Text>
                     </TouchableOpacity>
-                    <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>
                 </View>
-                
+                <Alerta
+                    mensagem={mensagemError}
+                    error={statusError == 'firebase'}
+                    setError={setStatusError}
+                />
             </View>
         </ScrollView>
     );
@@ -64,7 +100,7 @@ export default Login;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: '25%'
+        paddingTop: '10%'
     },
     header: {
         flex: .30,
