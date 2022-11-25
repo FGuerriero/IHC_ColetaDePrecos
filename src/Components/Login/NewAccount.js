@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Alert, View, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { Alerta } from '../Alerta';
 import { cadastrar } from '../../servicos/requisicoesFirebase';
@@ -45,7 +46,7 @@ function NewAccount({ navigation }) {
     }
 
     return (
-        <ScrollView style={styles.scrollContainer}>
+        <KeyboardAwareScrollView style={styles.scrollContainer}>
             <View style={styles.container}>
                 <View style={styles.header}>
                     <Image
@@ -90,7 +91,7 @@ function NewAccount({ navigation }) {
                     setError={setStatusError}
                 />
             </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 

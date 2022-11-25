@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Text, StyleSheet, TouchableOpacity, Alert, View, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, Alert, 
+    View, ScrollView, ActivityIndicator, Image, TextInput
+ } from 'react-native';
+ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { Alerta } from '../Alerta';
 
@@ -44,17 +47,14 @@ function Login({ navigation }) {
             }
         }
     }
-
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.container}>
+        <KeyboardAwareScrollView style={styles.container}>
                 <View style={styles.header}>
                     <Image
                         source={require('../../../assets/LOGO_coletaPreços.png')}
                         resizeMode='contain'
                     />
                 </View>
-
                 <View style={styles.loginForm}>
                     <TextInput
                         style={styles.input}
@@ -68,7 +68,6 @@ function Login({ navigation }) {
                         secureTextEntry={true}
                     />
                 </View>
-
                 <View style={styles.formButtons}>
                     <TouchableOpacity style={styles.btnLogin} onPress={() => {
                         realizarLogin()
@@ -90,8 +89,7 @@ function Login({ navigation }) {
                     error={statusError == 'firebase'}
                     setError={setStatusError}
                 />
-            </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 
@@ -100,7 +98,7 @@ export default Login;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: '10%'
+        paddingTop: '20%'
     },
     header: {
         flex: .30,
