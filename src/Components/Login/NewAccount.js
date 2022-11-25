@@ -1,43 +1,58 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Alert, View, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+import { Alerta } from '../Alerta';
+import { cadastrar } from '../../servicos/requisicoesFirebase';
 
 function NewAccount({ navigation }) {
-    const [nome, setNome] = useState(null)
-    const [email, setEmail] = useState(null)
-    const [pass, setPass] = useState(null)
-    const [passConfirm, setPassConfirm] = useState(null)
+    const [nome, setNome] = useState('')
+    const [email, setEmail] = useState('')
+    const [pass, setPass] = useState('')
+    const [passConfirm, setPassConfirm] = useState('')
     const [loading, setLoading] = useState(false)
+    const [statusError, setStatusError] = useState('');
+    const [mensagemError, setMensagemError] = useState('');
 
-    const cadastrarUsuário = () => {
-        if(nome === null){
-            Alert.alert("Preencha Nome para prosseguir.")
-        }else if(email === null || email.match(/@/g).length !== 1){
-            Alert.alert("Preencha email válido para prosseguir.")
-        }else if(pass === null){
-            Alert.alert("Preencha senha para prosseguir.")
-        }else if(passConfirm === null){
-            Alert.alert("Confirme senha para prosseguir.")
-        }else if(pass !== passConfirm){
-            Alert.alert("Os campos de senha devem ser iguais!")
-        }else{
-            setLoading(true)
-            setTimeout(() => {
-                //Persistência de Usuário
-
-                setLoading(false)
-                navigation.goBack()
-            },3000)
+    async function realizarCadastro() {
+        if (nome == '') {
+            setMensagemError('Preencha seu nome');
+            setStatusError('firebase');        
+        } else if (email == '') {
+            setMensagemError('Preencha com seu email');
+            setStatusError('firebase');
+        } else if (pass == '') {
+            setMensagemError('Digite sua senha');
+            setStatusError('firebase');
+        } else if (passConfirm == '') {
+            setMensagemError('Confirme sua senha');
+            setStatusError('firbase');
+        } else if (passConfirm != pass) {
+            setMensagemError('As senhas não conferem!');
+            setStatusError('firebase');
+        } else {
+            const resultado = await cadastrar(email, pass);
+            setStatusError('firebase');
+            if (resultado == 'sucesso') {
+                setMensagemError('Usuário criado com sucesso!');
+                setEmail('');
+                setPass('');
+                setPassConfirm('');
+            }
+            else {
+                setMensagemError(resultado);
+            }
         }
     }
 
     return (
-        <ScrollView style={styles.scrollContainer}>
+        <KeyboardAwareScrollView style={styles.scrollContainer}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Image 
+                    <Image
                         source={require('../../../assets/LOGO_coletaPreços.png')}
-                        resizeMode= 'contain'
-                        style={{marginBottom: '10%'}}
+                        resizeMode='contain'
+                        style={{ marginBottom: '10%' }}
                     />
                 </View>
 
@@ -63,24 +78,27 @@ function NewAccount({ navigation }) {
                         onChangeText={inputPass => setPassConfirm(inputPass)}
                     />
                 </View>
-                <TouchableOpacity 
-                    style={styles.btnCadastrar} 
-                    onPress={cadastrarUsuário}
-                    //color='#3cbfad' 
+                <TouchableOpacity
+                    style={styles.btnCadastrar}
+                    onPress={() => realizarCadastro()}
+                //color='#3cbfad' 
                 >
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>CADASTRAR</Text>
                 </TouchableOpacity>
-                <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>
-                
+                <Alerta
+                    mensagem={mensagemError}
+                    error={statusError == 'firebase'}
+                    setError={setStatusError}
+                />
             </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 
 export default NewAccount;
 
 const styles = StyleSheet.create({
-    
+
     scrollContainer: {
         flex: 1,
     },
@@ -134,6 +152,6 @@ const styles = StyleSheet.create({
         width: '70%',
         height: '10%',
         elevation: 5,
-        alignSelf: 'center' 
+        alignSelf: 'center'
     },
 })
