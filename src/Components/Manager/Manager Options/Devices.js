@@ -93,7 +93,7 @@ function Devices({navigation}) {
 
     return (
         
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -211,7 +211,7 @@ function Devices({navigation}) {
                     })
                 }
             </ScrollView>
-        </View>
+        </ScrollView>
     );
 }
 

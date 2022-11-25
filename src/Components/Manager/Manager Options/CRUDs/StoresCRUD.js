@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivitstoreNameyIndicator, DeviceEventEmitter, Alert, ActivityIndicator } from 'react-native';
+import { Text, StyleSheet, View, ScrollView, TextInput, Modal, TouchableOpacity, ActivitstoreNameyIndicator, DeviceEventEmitter, Alert, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Header from '../../../Header/Header';
 
@@ -38,42 +38,44 @@ function StoresCRUD({route, navigation}) {
     return(
         <View style={styles.container}>
             <Header />
-            <View style={styles.btnBackContainer}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <AntDesign name="leftcircle" size={40} color='#80808070' />
-                </TouchableOpacity>
-            </View>
-            <View style={styles.bodyContainer}>
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Nome da Loja'}
-                    value={storeName}
-                    onChangeText={ text => setStoreName(text)}
-                />
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Franquia'}
-                    value={franchise}
-                    onChangeText={ text => setFranchise(text)}
-                />
-                <TextInput 
-                    style={styles.inputTextDescription} 
-                    placeholder={'Endereço completo'}
-                    onChangeText={ text => setAddress(text)}
-                    value={address}
-                    multiline={true}
-                />
-                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarLoja()}>
-                    <Text style={styles.txtBtnGravar}>
-                    {
-                        loadVisible ? 
-                            <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
-                        :
-                            'GRAVAR'
-                    }
-                    </Text>
-                </TouchableOpacity>
-            </View>
+            <ScrollView>
+                <View style={styles.btnBackContainer}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <AntDesign name="leftcircle" size={40} color='#80808070' />
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.bodyContainer}>
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'Nome da Loja'}
+                        value={storeName}
+                        onChangeText={ text => setStoreName(text)}
+                    />
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'Franquia'}
+                        value={franchise}
+                        onChangeText={ text => setFranchise(text)}
+                    />
+                    <TextInput 
+                        style={styles.inputTextDescription} 
+                        placeholder={'Endereço completo'}
+                        onChangeText={ text => setAddress(text)}
+                        value={address}
+                        multiline={true}
+                    />
+                    <TouchableOpacity style={styles.btnGravar} onPress={() => GravarLoja()}>
+                        <Text style={styles.txtBtnGravar}>
+                        {
+                            loadVisible ? 
+                                <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
+                            :
+                                'GRAVAR'
+                        }
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
         </View>
     )
 }
@@ -135,12 +137,11 @@ const styles = StyleSheet.create({
     },
     btnGravar: {
         backgroundColor: '#A60A0A',
-        margin: '5%',
-        height: '5%',
+        margin: '10%',
         justifyContent: 'center',
-        flex: 0.14,
         width: '100%',
-        marginTop: '30%'
+        marginTop: '10%',
+        height: 40
     },
     txtBtnGravar: {
         fontSize: 19.76,

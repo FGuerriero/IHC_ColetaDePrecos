@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert } from 'react-native';
+import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert, ScrollView } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
 
 const USERS = ['Fernando G', 'Juliana C', 'Jushara S', 'Fagner A', 'Matheus G', 'Fernando Guerriero', 'Juliana Cruz', 'Anthony Castro']
 
-function StoresCRUD({route, navigation}) {
+function DevicesCRUD({route, navigation}) {
     const [nickName, setNickName] = useState(null)
     const [brand, setBrand] = useState(null)
     const [model, setModel] = useState(null)
@@ -44,7 +44,7 @@ function StoresCRUD({route, navigation}) {
     }, [])
 
     return(
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Header />
             <View style={styles.btnBackContainer}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -103,11 +103,11 @@ function StoresCRUD({route, navigation}) {
                     </Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
-export default StoresCRUD;
+export default DevicesCRUD;
 
 const styles = StyleSheet.create({
     container: {

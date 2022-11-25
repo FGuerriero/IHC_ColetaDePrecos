@@ -66,7 +66,7 @@ function Products({navigation}) {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Deseja realmente deletar o Produto?:</Text>
-                        <Text style={styles.modalProductText}>{currentIndex ? productsList[currentIndex].productType : undefined}, {currentIndex ? productsList[currentIndex].productBrand : undefined} </Text>
+                        <Text style={styles.modalProductText}>{productsList[currentIndex].productType}, {productsList[currentIndex].productBrand} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
@@ -103,8 +103,9 @@ function Products({navigation}) {
                         placeholder={'Pesquise o Produto'}
                         onChangeText={ subStringItem => {
                             setListItems(productsList.filter( item => {
-                                return item.itemCategory.toLowerCase().includes(subStringItem.toLowerCase())
+                                return item.productType.toLowerCase().includes(subStringItem.toLowerCase())
                             }))
+                            console.log(listItems)
                             return
                         }}
                     />
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
         fontSize: 42,
     },
     backSearch: {
-        height: '10%',
+        height: 80,
         flexDirection: 'row',
         alignItems: 'center',
         // borderColor: '#000',
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
     btnNovoProduto: {
         backgroundColor: '#A60A0A',
         margin: '5%',
-        height: '5%',
+        height: 45,
         justifyContent: 'center'
     },
     txtNovoProduto: {
