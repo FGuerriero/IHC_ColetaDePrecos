@@ -10,6 +10,18 @@ import {
   APP_ID,
   MEASUREMENT_ID,
 } from "@env"
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  onSnapshot,
+  doc,
+  deleteDoc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: API_KEY,
@@ -23,9 +35,22 @@ const firebaseConfig = {
 console.log('firebase init');
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage)
 })
 
-export { auth }; 
+export {
+  auth,
+  db,
+  collection,
+  getDocs,
+  addDoc,
+  onSnapshot,
+  doc,
+  deleteDoc,
+  updateDoc,
+  query,
+  where,
+};

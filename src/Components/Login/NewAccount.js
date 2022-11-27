@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Alert, View, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../config/firebase.js";
 
 import { Alerta } from '../Alerta';
 import { cadastrar } from '../../servicos/requisicoesFirebase';
+import {AuthContext} from '../../Context/context'
 
 function NewAccount({ navigation }) {
     const [nome, setNome] = useState('')
@@ -13,6 +15,7 @@ function NewAccount({ navigation }) {
     const [loading, setLoading] = useState(false)
     const [statusError, setStatusError] = useState('');
     const [mensagemError, setMensagemError] = useState('');
+    const { nomeTeste, userAuth, setUserAuth } = useContext(AuthContext)
 
     async function realizarCadastro() {
         if (nome == '') {
@@ -31,16 +34,34 @@ function NewAccount({ navigation }) {
             setMensagemError('As senhas não conferem!');
             setStatusError('firebase');
         } else {
+            setLoading(true)
             const resultado = await cadastrar(email, pass);
+            console.log("Nome: ", nome)
+            console.log("Email: ", email)
             setStatusError('firebase');
-            if (resultado == 'sucesso') {
+            if (resultado.user) {
+                console.log("Cadastro realizado com sucesso!")
+                const newUser = await addDoc(collection(db, "Usuarios"), {
+                    nome: nome,
+                    email: email,
+                    tipo: 'Coletor',
+                    uid: resultado.user.uid
+                });
+                setUserAuth({
+                    nome: nome,
+                    email: email,
+                    tipo: 'Coletor',
+                    uid: resultado.user.uid
+                })
                 setMensagemError('Usuário criado com sucesso!');
                 setEmail('');
                 setPass('');
                 setPassConfirm('');
+                setLoading(false)
             }
             else {
                 setMensagemError(resultado);
+                setLoading(false)
             }
         }
     }
@@ -85,6 +106,7 @@ function NewAccount({ navigation }) {
                 >
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>CADASTRAR</Text>
                 </TouchableOpacity>
+                <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>
                 <Alerta
                     mensagem={mensagemError}
                     error={statusError == 'firebase'}

@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Alert, 
     View, ScrollView, ActivityIndicator, Image, TextInput
  } from 'react-native';
  import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+ import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../config/firebase.js";
 
 import { Alerta } from '../Alerta';
+import {AuthContext} from '../../Context/context'
 
 import { auth } from '../../config/firebase';
 import { logar } from '../../servicos/requisicoesFirebase';
@@ -13,10 +15,12 @@ function Login({ navigation }) {
     const [login, setLogin] = useState('')
     const [password, setPassword] = useState('')
     const [createAccount, setCreateAccount] = useState(null)
-    const [loading, setLoading] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     const [statusError, setStatusError] = useState('');
     const [mensagemError, setMensagemError] = useState('');
+
+    const { userAuth, setUserAuth } = useContext(AuthContext)
 
     useEffect(() => {
         const estadoUsuario = auth.onAuthStateChanged(usuario => {
@@ -24,6 +28,7 @@ function Login({ navigation }) {
                 navigation.replace('Home')
             }
         })
+        //console.log("Current User: ", auth.currentUser)
         return () => estadoUsuario();
     }, [])
 
@@ -37,13 +42,29 @@ function Login({ navigation }) {
             setMensagemError('A senha é obrigatória!');
             setStatusError('firebase');
         } else {
+            setLoading(true)
             const resultado = await logar(login, password);
+            await getDocs(collection(db, "Usuarios")).then((snapShot) => {
+                const newUser = snapShot.docs.filter((doc) => {
+                    return doc.data().uid == resultado.user.uid
+                })
+                //console.log("Resultado Login: ", newUser[0]._document.data)
+                setUserAuth({
+                    nome: newUser[0]._document.data.value.mapValue.fields.nome.stringValue,
+                    email: newUser[0]._document.data.value.mapValue.fields.email.stringValue,
+                    tipo: newUser[0]._document.data.value.mapValue.fields.tipo.stringValue,
+                    uid: newUser[0]._document.data.value.mapValue.fields.uid.stringValue
+                })
+            })
             if (resultado == 'erro') {
                 setStatusError('firebase')
                 setMensagemError('Login ou senha não conferem')
+                setLoading(false)
             }
             else {
+                
                 navigation.replace('Home')
+                setLoading(false)
             }
         }
     }
@@ -83,6 +104,7 @@ function Login({ navigation }) {
                     <TouchableOpacity style={styles.btnNovaConta} color='#3cbfad' onPress={() => navigation.push('NewAccount')}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>NOVA CONTA</Text>
                     </TouchableOpacity>
+                    <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>
                 </View>
                 <Alerta
                     mensagem={mensagemError}
@@ -98,7 +120,7 @@ export default Login;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: '20%'
+        paddingTop: '50%'
     },
     header: {
         flex: .30,

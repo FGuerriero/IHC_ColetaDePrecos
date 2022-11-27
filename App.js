@@ -19,30 +19,35 @@ import UsersCRUD from './src/Components/Manager/Manager Options/CRUDs/UsersCRUD'
 import ForgotPass from './src/Components/Login/ForgotPass';
 import NewAccount from './src/Components/Login/NewAccount';
 
+import AuthProvider from './src/Context/context';
+
 export default function App() {
   // const [loginValidation, setLoginValidation] = useState(false)
   const Stack = createNativeStackNavigator();
 
   return (
     <NavigationContainer style={styles.container} initialRouteName="Login">
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={Login}/>
-          <Stack.Screen name="ForgotPass" component={ForgotPass}/>
-          <Stack.Screen name="NewAccount" component={NewAccount}/>
-        <Stack.Screen name="Home" component={Home}/>
-        <Stack.Screen name="SendPic" component={SendPic} />
-          <Stack.Screen name ="TakePic" component={TakePic} />
-        <Stack.Screen name="CheckList" component={CheckList} />
-        <Stack.Screen name="Manager" component={Manager} />
-          <Stack.Screen name="Products" component={Products} />
-            <Stack.Screen name='ProductsCRUD' component={ProductsCRUD} />
-            <Stack.Screen name='StoresCRUD' component={StoresCRUD} />
-            <Stack.Screen name='DevicesCRUD' component={DevicesCRUD} />
-            <Stack.Screen name='UsersCRUD' component={UsersCRUD} />
-          <Stack.Screen name="Stores" component={Stores} />
-          <Stack.Screen name="Devices" component={Devices} />
-          <Stack.Screen name="Users" component={Users} />
-      </Stack.Navigator>
+      <AuthProvider>
+
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={Login}/>
+            <Stack.Screen name="ForgotPass" component={ForgotPass}/>
+            <Stack.Screen name="NewAccount" component={NewAccount}/>
+          <Stack.Screen name="Home" component={Home}/>
+          <Stack.Screen name="SendPic" component={SendPic} />
+            <Stack.Screen name ="TakePic" component={TakePic} />
+          <Stack.Screen name="CheckList" component={CheckList} />
+          <Stack.Screen name="Manager" component={Manager} />
+            <Stack.Screen name="Products" component={Products} />
+              <Stack.Screen name='ProductsCRUD' component={ProductsCRUD} />
+              <Stack.Screen name='StoresCRUD' component={StoresCRUD} />
+              <Stack.Screen name='DevicesCRUD' component={DevicesCRUD} />
+              <Stack.Screen name='UsersCRUD' component={UsersCRUD} />
+            <Stack.Screen name="Stores" component={Stores} />
+            <Stack.Screen name="Devices" component={Devices} />
+            <Stack.Screen name="Users" component={Users} />
+        </Stack.Navigator>
+      </AuthProvider>
       {/* {
         loginValidation ? <Home /> : <Login handleLogin={setLoginValidation}/>
       } */}

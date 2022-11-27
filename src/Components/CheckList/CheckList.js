@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Alert, Pressable } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import Header from '../Header/Header';
 
