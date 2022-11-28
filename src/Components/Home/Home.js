@@ -1,8 +1,30 @@
-import React, {useState} from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Text, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
 import Header from '../Header/Header';
 
+import {AuthContext} from '../../Context/context'
+import {db,auth,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../config/firebase.js";
+
 function Home({ navigation }) {
+    const { userAuth, setUserAuth } = useContext(AuthContext)
+
+    useEffect(() => {
+        getDocs(collection(db, "Usuarios")).then((snapShot) => {
+            const newUser = snapShot.docs.filter((doc) => {
+                return doc.data().uid == auth.currentUser.uid
+            })
+            //console.log("Resultado Login: ", newUser[0]._document.data)
+            setUserAuth({
+                nome: newUser[0]._document.data.value.mapValue.fields.nome.stringValue,
+                email: newUser[0]._document.data.value.mapValue.fields.email.stringValue,
+                tipo: newUser[0]._document.data.value.mapValue.fields.tipo.stringValue,
+                uid: newUser[0]._document.data.value.mapValue.fields.uid.stringValue
+            })
+        })
+        
+        console.log("Current User: ", auth.currentUser.uid)
+        return
+    },[])
     
     return (
         <View style={styles.container}>

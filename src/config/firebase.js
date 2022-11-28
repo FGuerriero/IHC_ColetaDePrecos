@@ -16,6 +16,7 @@ import {
   getDocs,
   addDoc,
   onSnapshot,
+  setDoc,
   doc,
   deleteDoc,
   updateDoc,
@@ -37,12 +38,19 @@ console.log('firebase init');
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+
 const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage)
+})
+
+const authManager = initializeAuth(secondaryApp, {
   persistence: getReactNativePersistence(AsyncStorage)
 })
 
 export {
   auth,
+  authManager,
   db,
   collection,
   getDocs,

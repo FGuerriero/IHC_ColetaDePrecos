@@ -1,42 +1,106 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter } from 'react-native';
+import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert, ScrollView } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
-import { NavigationHelpersContext } from '@react-navigation/native';
+import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../../../config/firebase.js";
+import { cadastrar } from '../../../../servicos/requisicoesFirebase';
 
-const BRANDS = ['Camil', 'Kicaldo', 'Prato Fino', 'Dona Benta', 'Renata', 'Parmalate', 'My Oh Nese!']
+import {createUserWithEmailAndPassword} from "firebase/auth";
+
+const accessLvls = ['Administrador', 'Supervisor', 'Coletor']
 
 function UsersCRUD({route, navigation}) {
-    const [productName, setProductName] = useState(null)
-    const [productBrand, setProductBrand] = useState(null)
-    const [productDescription, setProductDescription] = useState(null)
+    const [name, setName] = useState('')
+    const [email, setEmail] = useState('')
+    const [type, setType] = useState(null)
+    const [tempPass, setTempPass] = useState('')
+    const [uid, setUid] = useState(null)
+
     const [loadVisible, setLoadVisible] = useState(false)
-
-    const GravarProduto = () => {
-        setLoadVisible(true)
-        setTimeout(() => {
-            setLoadVisible(false)
-            navigation.goBack()
-            //---------------Tratativa de Resposta da API: -----------
-
-            //-----------SUCCESS-------------------
-            // DeviceEventEmitter.emit("event.productSavedResponse", 'success')
-
-            //-----------ERROR--------------------
-            DeviceEventEmitter.emit("event.productSavedResponse", 'fail')
-
-        },4000)
-        return
-    }
 
     useEffect(() => {
         if(route.params){
-            setProductName(route.params.productType)
-            setProductBrand(route.params.productBrand)
-            setProductDescription(route.params.productDescription)
+            setName(route.params.nome)
+            setEmail(route.params.email)
+            setType(route.params.tipo)
+            setUid(route.params.uid)
         }
     }, [])
+
+    const GravarDevice = async () => {
+        if (name == '') {
+            Alert.alert("Preencha Nome do Usuário")      
+        } else if (email == '') {
+            Alert.alert("Preencha email do Usuário")  
+        } else if (tempPass == '' && !route.params) {
+            Alert.alert("Preencha Senha Temporária do Usuário")  
+        } else if (type === null) {
+            Alert.alert("Selecione o Nível de acesso do Usuário!")
+        } else {
+            setLoadVisible(true)
+            await getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
+                const newUser = snapShot.docs.filter((doc) => {
+                    return doc.data().email == email
+                })
+                if(newUser[0]){
+                    if(route.params){
+                        await updateDoc(doc(db,"Usuarios",route.params.id),{
+                            nome: name,
+                            email,
+                            tipo: type
+                        }).then((resp) => {
+                            console.log("Response: ", resp)
+                        })
+
+                        setEmail('');
+                        setTempPass('');
+                        setType(null);
+                        setUid('')
+                        setLoadVisible(false)
+
+                        DeviceEventEmitter.emit("event.userUpdated")
+                        navigation.goBack()
+                    }else{
+                        Alert.alert("Já existe uma conta cadastrada com este email!")
+                        setLoadVisible(false)
+                    }
+                }else{
+                    const resultado = await createUserWithEmailAndPassword(authManager, email, tempPass)
+                        .then((dadosDoUsuario) => {
+                            //console.log(dadosDoUsuario)
+                            return dadosDoUsuario
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                            return error
+                        });
+                    if (resultado.user) {
+                        console.log("Cadastro realizado com sucesso!")
+                        const newUser = await addDoc(collection(db, "Usuarios"), {
+                            nome: name,
+                            email: email,
+                            tipo: type,
+                            uid: resultado.user.uid
+                        });
+                        Alert.alert("Usuário cadastrado com sucesso!\nSenha do novo Usuário: "+tempPass)
+                        navigation.goBack()
+                        
+                        setEmail('');
+                        setTempPass('');
+                        setType(null);
+                        setUid('')
+                        setLoadVisible(false)
+                    }
+                    else {
+                        Alert.alert("Erro ao tentar cadastrar usuário.\nContate Administrador do Sistema!");
+                        setLoadVisible(false)
+                    }
+                }
+            })
+        }
+        return
+    }
 
     return(
         <View style={styles.container}>
@@ -46,47 +110,58 @@ function UsersCRUD({route, navigation}) {
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
                 </TouchableOpacity>
             </View>
-            <View style={styles.bodyContainer}>
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Nome do Produto'}
-                    value={productName}
-                    onChangeText={ text => setProductName(text)}
-                />
-                <View style={styles.pickerContainer}>
-                    <Picker
-                        selectedValue={productBrand}
-                        onValueChange={newValue => setProductBrand(newValue)}
-                        style={styles.picker}
-                    >
-                        <Picker.Item label='Selecione Produto' value={null} key={0} style={styles.pickerItemGrey}/>
-                        {
-                            BRANDS.map((item, index) => {
-                                return (
-                                    <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
-                                )
-                            })
-                        }
-                    </Picker>
-                </View>
-                <TextInput 
-                    style={styles.inputTextDescription} 
-                    placeholder={'Descrição do Produto'}
-                    onChangeText={ text => setProductName(text)}
-                    value={productDescription}
-                    multiline={true}
-                />
-                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarProduto()}>
-                    <Text style={styles.txtBtnGravar}>
-                    {
-                        loadVisible ? 
-                            <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
-                        :
-                            'GRAVAR'
+            <ScrollView>
+                <View style={styles.bodyContainer}>
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'Nome'}
+                        value={name}
+                        onChangeText={ text => setName(text)}
+                    />
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'E-mail'}
+                        value={email}
+                        onChangeText={ text => setEmail(text)}
+                    />
+                    {!route.params?
+                        <TextInput 
+                            style={styles.inputText} 
+                            placeholder={'Senha Provisória'}
+                            value={tempPass}
+                            onChangeText={ text => setTempPass(text)}
+                        />
+                    :
+                        undefined
                     }
-                    </Text>
-                </TouchableOpacity>
-            </View>
+                    <View style={styles.pickerContainer}>
+                        <Picker
+                            selectedValue={type}
+                            onValueChange={newValue => setType(newValue)}
+                            style={styles.picker}
+                        >
+                            <Picker.Item label='Nível de Acesso' value={type} key={0} style={styles.pickerItemGrey}/>
+                            {
+                                accessLvls.map((item, index) => {
+                                    return (
+                                        <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+                                    )
+                                })
+                            }
+                        </Picker>
+                    </View>
+                    <TouchableOpacity style={styles.btnGravar} onPress={() => GravarDevice()}>
+                        <Text style={styles.txtBtnGravar}>
+                        {
+                            loadVisible ? 
+                                <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
+                            :
+                                'GRAVAR'
+                        }
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
         </View>
     )
 }
@@ -98,7 +173,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     btnBackContainer: {
-        height: '10%',
+        height: 70,
         flexDirection: 'row',
         alignItems: 'center'
     },
@@ -110,13 +185,15 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginHorizontal: '3%'
+        marginHorizontal: '3%',
+        marginTop: '10%'
     },
     inputText: {
         //height: '100%',
         width: '100%',
         fontSize: 27,
         marginLeft: '2%',
+        marginBottom: '5%',
         borderColor: '#868686',
         borderWidth: 2,
         borderRadius: 9.5,
@@ -134,12 +211,12 @@ const styles = StyleSheet.create({
         padding: '4%'
     },
     pickerContainer: {
-        height: '11%',
+        //height: '11%',
         borderColor: '#868686',
         borderWidth: 2,
         width:'100%',
         borderRadius: 9.5,
-        marginVertical: '10%'
+        //marginVertical: '10%'
     },
     picker: {
         //fontSize: 30,
@@ -148,11 +225,12 @@ const styles = StyleSheet.create({
     btnGravar: {
         backgroundColor: '#A60A0A',
         margin: '5%',
-        height: '5%',
+        height: 40,
         justifyContent: 'center',
         flex: 0.14,
         width: '100%',
-        marginTop: '30%'
+        marginTop: '30%',
+        marginBottom: '20%'
     },
     txtBtnGravar: {
         fontSize: 19.76,
@@ -167,5 +245,5 @@ const styles = StyleSheet.create({
     pickerItemBlack: {
         fontSize: 27,
         color: '#000'
-    }
+    },
 })

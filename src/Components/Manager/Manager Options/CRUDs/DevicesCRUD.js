@@ -44,66 +44,68 @@ function DevicesCRUD({route, navigation}) {
     }, [])
 
     return(
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             <Header />
             <View style={styles.btnBackContainer}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
                 </TouchableOpacity>
             </View>
-            <View style={styles.bodyContainer}>
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Nome do Device'}
-                    value={nickName}
-                    onChangeText={ text => setNickName(text)}
-                />
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Marca'}
-                    value={brand}
-                    onChangeText={ text => setBrand(text)}
-                />
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Modelo'}
-                    value={model}
-                    onChangeText={ text => setModel(text)}
-                />
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'MAC address'}
-                    value={addressMAC}
-                    onChangeText={ text => setAddressMAC(text)}
-                />
-                <View style={styles.pickerContainer}>
-                    <Picker
-                        selectedValue={sponsor}
-                        onValueChange={newValue => setSponsor(newValue)}
-                        style={styles.picker}
-                    >
-                        <Picker.Item label='Selecione Responsável' value={null} key={0} style={styles.pickerItemGrey}/>
+            <ScrollView>
+                <View style={styles.bodyContainer}>
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'Nome do Device'}
+                        value={nickName}
+                        onChangeText={ text => setNickName(text)}
+                    />
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'Marca'}
+                        value={brand}
+                        onChangeText={ text => setBrand(text)}
+                    />
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'Modelo'}
+                        value={model}
+                        onChangeText={ text => setModel(text)}
+                    />
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'MAC address'}
+                        value={addressMAC}
+                        onChangeText={ text => setAddressMAC(text)}
+                    />
+                    <View style={styles.pickerContainer}>
+                        <Picker
+                            selectedValue={sponsor}
+                            onValueChange={newValue => setSponsor(newValue)}
+                            style={styles.picker}
+                        >
+                            <Picker.Item label='Selecione Responsável' value={null} key={0} style={styles.pickerItemGrey}/>
+                            {
+                                USERS.map((item, index) => {
+                                    return (
+                                        <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+                                    )
+                                })
+                            }
+                        </Picker>
+                    </View>
+                    <TouchableOpacity style={styles.btnGravar} onPress={() => GravarDevice()}>
+                        <Text style={styles.txtBtnGravar}>
                         {
-                            USERS.map((item, index) => {
-                                return (
-                                    <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
-                                )
-                            })
+                            loadVisible ? 
+                                <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
+                            :
+                                'GRAVAR'
                         }
-                    </Picker>
+                        </Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarDevice()}>
-                    <Text style={styles.txtBtnGravar}>
-                    {
-                        loadVisible ? 
-                            <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
-                        :
-                            'GRAVAR'
-                    }
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </View>
     )
 }
 
@@ -114,7 +116,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     btnBackContainer: {
-        height: '10%',
+        height: 70,
         flexDirection: 'row',
         alignItems: 'center'
     },
@@ -165,11 +167,12 @@ const styles = StyleSheet.create({
     btnGravar: {
         backgroundColor: '#A60A0A',
         margin: '5%',
-        height: '5%',
+        height: 40,
         justifyContent: 'center',
         flex: 0.14,
         width: '100%',
-        marginTop: '30%'
+        marginTop: '30%',
+        marginBottom: '20%'
     },
     txtBtnGravar: {
         fontSize: 19.76,

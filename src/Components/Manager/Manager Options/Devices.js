@@ -93,7 +93,7 @@ function Devices({navigation}) {
 
     return (
         
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -106,7 +106,7 @@ function Devices({navigation}) {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Deseja realmente deletar o Dispositivo?:</Text>
-                        <Text style={styles.modalProductText}>{currentIndex ? devicesList[currentIndex].deviceNickname : undefined}, {currentIndex ? devicesList[currentIndex].deviceSponsor : undefined} </Text>
+                        <Text style={styles.modalStoreText}>{devicesList[currentIndex].deviceNickname}, {devicesList[currentIndex].deviceSponsor} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
@@ -143,7 +143,7 @@ function Devices({navigation}) {
                         placeholder={'Pesquise o Device'}
                         onChangeText={ subStringItem => {
                             setListItems(devicesList.filter( item => {
-                                return item.storeName.toLowerCase().includes(subStringItem.toLowerCase())
+                                return item.deviceNickname.toLowerCase().includes(subStringItem.toLowerCase())
                             }))
                             return
                         }}
@@ -151,7 +151,7 @@ function Devices({navigation}) {
                 </View>
             </View>
             <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('DevicesCRUD')}>
-                <Text style={styles.txtNovoProduto}>NOVO DEVICE</Text>
+                <Text style={styles.txtNovoProduto}>NOVO DISPOSITIVO</Text>
             </TouchableOpacity>
             <ScrollView style={styles.scrollContainer}>
             {
@@ -175,7 +175,9 @@ function Devices({navigation}) {
                                         :
                                             styles.itemContainer
                             }>
-                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {setCurrentIndex(index)}}>
+                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {
+                                        setCurrentIndex(index)  
+                                    }}>
                                     <View style={styles.textContainer}>
                                         <Text style={[styles.itemTitle,]}>
                                             {item.deviceNickname}
@@ -211,7 +213,7 @@ function Devices({navigation}) {
                     })
                 }
             </ScrollView>
-        </ScrollView>
+        </View>
     );
 }
 
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
         fontSize: 42,
     },
     backSearch: {
-        height: '10%',
+        height: 80,
         flexDirection: 'row',
         alignItems: 'center',
         // borderColor: '#000',
@@ -290,7 +292,7 @@ const styles = StyleSheet.create({
     btnNovoProduto: {
         backgroundColor: '#A60A0A',
         margin: '5%',
-        height: '5%',
+        height: 45,
         justifyContent: 'center'
     },
     txtNovoProduto: {
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         fontSize: 21
       },
-      modalProductText: {
+      modalStoreText: {
         marginBottom: 15,
         textAlign: "center",
         color: '#352727',

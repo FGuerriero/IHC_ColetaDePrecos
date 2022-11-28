@@ -15,7 +15,7 @@ function NewAccount({ navigation }) {
     const [loading, setLoading] = useState(false)
     const [statusError, setStatusError] = useState('');
     const [mensagemError, setMensagemError] = useState('');
-    const { nomeTeste, userAuth, setUserAuth } = useContext(AuthContext)
+    const { userAuth, setUserAuth } = useContext(AuthContext)
 
     async function realizarCadastro() {
         if (nome == '') {
@@ -35,34 +35,45 @@ function NewAccount({ navigation }) {
             setStatusError('firebase');
         } else {
             setLoading(true)
-            const resultado = await cadastrar(email, pass);
-            console.log("Nome: ", nome)
-            console.log("Email: ", email)
-            setStatusError('firebase');
-            if (resultado.user) {
-                console.log("Cadastro realizado com sucesso!")
-                const newUser = await addDoc(collection(db, "Usuarios"), {
-                    nome: nome,
-                    email: email,
-                    tipo: 'Coletor',
-                    uid: resultado.user.uid
-                });
-                setUserAuth({
-                    nome: nome,
-                    email: email,
-                    tipo: 'Coletor',
-                    uid: resultado.user.uid
+
+            await getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
+                const newUser = snapShot.docs.filter((doc) => {
+                    return doc.data().email == email
                 })
-                setMensagemError('Usuário criado com sucesso!');
-                setEmail('');
-                setPass('');
-                setPassConfirm('');
-                setLoading(false)
-            }
-            else {
-                setMensagemError(resultado);
-                setLoading(false)
-            }
+                if(newUser[0]){
+                    Alert.alert("Já existe uma conta cadastrada com este email!")
+                    setLoading(false)
+                }else{
+                    const resultado = await cadastrar(email, pass);
+                    console.log("Nome: ", nome)
+                    console.log("Email: ", email)
+                    setStatusError('firebase');
+                    if (resultado.user) {
+                        console.log("Cadastro realizado com sucesso!")
+                        const newUser = await addDoc(collection(db, "Usuarios"), {
+                            nome: nome,
+                            email: email,
+                            tipo: 'Coletor',
+                            uid: resultado.user.uid
+                        });
+                        setUserAuth({
+                            nome: nome,
+                            email: email,
+                            tipo: 'Coletor',
+                            uid: resultado.user.uid
+                        })
+                        setMensagemError('Usuário criado com sucesso!');
+                        setEmail('');
+                        setPass('');
+                        setPassConfirm('');
+                        setLoading(false)
+                    }
+                    else {
+                        setMensagemError(resultado);
+                        setLoading(false)
+                    }
+                }
+            })
         }
     }
 

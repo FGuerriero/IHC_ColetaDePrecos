@@ -163,15 +163,15 @@ function CheckList({navigation}) {
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={clearModalVisible}
+                visible={{clearModalVisible}}
                 onRequestClose={() => {
-                  Alert.alert("Modal has been closed.");
-                  setClearModalVisible(!clearModalVisible);
+                  //Alert.alert("Modal has been closed.");
+                  setClearModalVisible(!clearModalVisible)
                 }}
             >
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Deseja realmente limpar os dados Coletados?</Text>
+                        <Text style={styles.modalText}>Deseja realmente limpar os dados Coletados?:</Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
@@ -192,7 +192,7 @@ function CheckList({navigation}) {
                     </View>
                 </View>
             </Modal>
-            <Header/>
+            <Header />
             <View style={styles.backSearch}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
@@ -216,7 +216,7 @@ function CheckList({navigation}) {
                 </View>
             </View>
             <ScrollView style={styles.scrollContainer}>
-                {
+            {
                     listItems.map( (item,index) => {
                         return(
                             <View key={index} style={
@@ -237,7 +237,9 @@ function CheckList({navigation}) {
                                         :
                                             styles.itemContainer
                             }>
-                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {setCurrentIndex(index)}}>
+                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {
+                                        setCurrentIndex(index)  
+                                    }}>
                                     <View style={styles.checkBoxContainer}>
                                         {
                                             item.collected?
@@ -313,7 +315,7 @@ const styles = StyleSheet.create({
         fontSize: 42,
     },
     backSearch: {
-        height: '10%',
+        height: 80,
         flexDirection: 'row',
         alignItems: 'center',
         // borderColor: '#000',
@@ -323,7 +325,7 @@ const styles = StyleSheet.create({
         // flex: 1,
         flexDirection: 'row',
         // alignSelf: 'center',
-        height: '65%',
+        height: 50,
         width: '80%',
         marginLeft: '5%',
         borderWidth: 1,

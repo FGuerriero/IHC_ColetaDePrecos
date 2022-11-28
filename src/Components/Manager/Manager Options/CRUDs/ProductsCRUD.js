@@ -4,6 +4,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
 import { NavigationHelpersContext } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const BRANDS = ['Camil', 'Kicaldo', 'Prato Fino', 'Dona Benta', 'Renata', 'Parmalate', 'My Oh Nese!']
 
@@ -47,47 +48,49 @@ function ProductsCRUD({route, navigation}) {
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
                 </TouchableOpacity>
             </View>
-            <View style={styles.bodyContainer}>
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Nome do Produto'}
-                    value={productName}
-                    onChangeText={ text => setProductName(text)}
-                />
-                <View style={styles.pickerContainer}>
-                    <Picker
-                        selectedValue={productBrand}
-                        onValueChange={newValue => setProductBrand(newValue)}
-                        style={styles.picker}
-                    >
-                        <Picker.Item label='Selecione Produto' value={null} key={0} style={styles.pickerItemGrey}/>
+            <KeyboardAwareScrollView>
+                <View style={styles.bodyContainer}>
+                    <TextInput 
+                        style={styles.inputText} 
+                        placeholder={'Nome do Produto'}
+                        value={productName}
+                        onChangeText={ text => setProductName(text)}
+                    />
+                    <View style={styles.pickerContainer}>
+                        <Picker
+                            selectedValue={productBrand}
+                            onValueChange={newValue => setProductBrand(newValue)}
+                            style={styles.picker}
+                        >
+                            <Picker.Item label='Selecione Produto' value={null} key={0} style={styles.pickerItemGrey}/>
+                            {
+                                BRANDS.map((item, index) => {
+                                    return (
+                                        <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+                                    )
+                                })
+                            }
+                        </Picker>
+                    </View>
+                    <TextInput 
+                        style={styles.inputTextDescription} 
+                        placeholder={'Descrição do Produto'}
+                        onChangeText={ text => setProductName(text)}
+                        value={productDescription}
+                        multiline={true}
+                    />
+                    <TouchableOpacity style={styles.btnGravar} onPress={() => GravarProduto()}>
+                        <Text style={styles.txtBtnGravar}>
                         {
-                            BRANDS.map((item, index) => {
-                                return (
-                                    <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
-                                )
-                            })
+                            loadVisible ? 
+                                <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
+                            :
+                                'GRAVAR'
                         }
-                    </Picker>
+                        </Text>
+                    </TouchableOpacity>
                 </View>
-                <TextInput 
-                    style={styles.inputTextDescription} 
-                    placeholder={'Descrição do Produto'}
-                    onChangeText={ text => setProductName(text)}
-                    value={productDescription}
-                    multiline={true}
-                />
-                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarProduto()}>
-                    <Text style={styles.txtBtnGravar}>
-                    {
-                        loadVisible ? 
-                            <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
-                        :
-                            'GRAVAR'
-                    }
-                    </Text>
-                </TouchableOpacity>
-            </View>
+            </KeyboardAwareScrollView>
         </View>
     )
 }
@@ -99,7 +102,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     btnBackContainer: {
-        height: '10%',
+        height: 60,
         flexDirection: 'row',
         alignItems: 'center'
     },
@@ -111,7 +114,8 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginHorizontal: '3%'
+        marginHorizontal: '3%',
+        paddingTop: '2%'
     },
     inputText: {
         //height: '100%',
@@ -145,11 +149,11 @@ const styles = StyleSheet.create({
     btnGravar: {
         backgroundColor: '#A60A0A',
         margin: '5%',
-        height: '5%',
+        height: 50,
         justifyContent: 'center',
         flex: 0.14,
         width: '100%',
-        marginTop: '30%'
+        marginVertical: '10%'
     },
     txtBtnGravar: {
         fontSize: 19.76,
