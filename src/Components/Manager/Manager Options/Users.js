@@ -5,6 +5,11 @@ import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../../
 
 import Header from '../../Header/Header';
 
+// const filteredRef = query(
+//     collectionRef,
+//     where(`recipiant`, "==", `${searchValue}`)
+//   );
+
 function Users({navigation}) {
     const [usersAll, setUsersAll] = useState([
         {
@@ -18,13 +23,10 @@ function Users({navigation}) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
-    DeviceEventEmitter.addListener("event.userUpdated", () => {
-        updateUsers()
-    });
-
     const updateUsers = () => {
         getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
-            const usersColl = snapShot.docs.map((doc) => {
+            const usersColl = snapShot.docs.map((doc,index) => {
+                //index === 0 ?console.log("ID"+index+": ", doc._document) : undefined
                 return {...doc.data(), id: doc._document.key.path.segments.pop()}
             })
             //console.log("Users: ", usersColl)
@@ -36,7 +38,13 @@ function Users({navigation}) {
     }
 
     useEffect(() => {
+        //console.log("UseEffect")
         updateUsers()
+
+        DeviceEventEmitter.addListener("event.userUpdated", () => {
+            console.log("Edited User")
+            updateUsers()
+        });
     },[])
 
     return (
@@ -147,6 +155,7 @@ function Users({navigation}) {
                                                     <Text style={styles.textButton}>Checklists</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.editButton} onPress={() => {
+                                                    console.log("Editando: ", item)
                                                     navigation.push('UsersCRUD', item)
                                                 }}>
                                                     <Text style={styles.textButton}>Editar</Text>

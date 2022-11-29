@@ -43,6 +43,7 @@ function UsersCRUD({route, navigation}) {
                 const newUser = snapShot.docs.filter((doc) => {
                     return doc.data().email == email
                 })
+                console.log("Current User: ", route.params)
                 if(newUser[0]){
                     if(route.params){
                         await updateDoc(doc(db,"Usuarios",route.params.id),{
@@ -52,15 +53,17 @@ function UsersCRUD({route, navigation}) {
                         }).then((resp) => {
                             console.log("Response: ", resp)
                         })
-
-                        setEmail('');
-                        setTempPass('');
-                        setType(null);
-                        setUid('')
-                        setLoadVisible(false)
-
-                        DeviceEventEmitter.emit("event.userUpdated")
-                        navigation.goBack()
+                        setTimeout(() => {
+                            DeviceEventEmitter.emit("event.userUpdated")
+    
+                            setEmail('');
+                            setTempPass('');
+                            setType(null);
+                            setUid('')
+                            setLoadVisible(false)
+    
+                            navigation.goBack()
+                        },1000)
                     }else{
                         Alert.alert("Já existe uma conta cadastrada com este email!")
                         setLoadVisible(false)
@@ -83,6 +86,7 @@ function UsersCRUD({route, navigation}) {
                             tipo: type,
                             uid: resultado.user.uid
                         });
+                        DeviceEventEmitter.emit("event.userUpdated")
                         Alert.alert("Usuário cadastrado com sucesso!\nSenha do novo Usuário: "+tempPass)
                         navigation.goBack()
                         
