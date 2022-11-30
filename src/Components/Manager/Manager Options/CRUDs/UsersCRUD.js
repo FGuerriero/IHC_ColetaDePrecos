@@ -53,17 +53,15 @@ function UsersCRUD({route, navigation}) {
                         }).then((resp) => {
                             console.log("Response: ", resp)
                         })
-                        setTimeout(() => {
-                            DeviceEventEmitter.emit("event.userUpdated")
-    
-                            setEmail('');
-                            setTempPass('');
-                            setType(null);
-                            setUid('')
-                            setLoadVisible(false)
-    
-                            navigation.goBack()
-                        },1000)
+                        DeviceEventEmitter.emit("event.userUpdated")
+
+                        setEmail('');
+                        setTempPass('');
+                        setType(null);
+                        setUid('')
+                        setLoadVisible(false)
+
+                        navigation.goBack()
                     }else{
                         Alert.alert("Já existe uma conta cadastrada com este email!")
                         setLoadVisible(false)
@@ -85,16 +83,19 @@ function UsersCRUD({route, navigation}) {
                             email: email,
                             tipo: type,
                             uid: resultado.user.uid
-                        });
-                        DeviceEventEmitter.emit("event.userUpdated")
-                        Alert.alert("Usuário cadastrado com sucesso!\nSenha do novo Usuário: "+tempPass)
-                        navigation.goBack()
-                        
-                        setEmail('');
-                        setTempPass('');
-                        setType(null);
-                        setUid('')
-                        setLoadVisible(false)
+                        }).then( resp => {
+                            DeviceEventEmitter.emit("event.userUpdated")
+                            Alert.alert("Usuário cadastrado com sucesso!\nSenha do novo Usuário: "+tempPass)
+                            navigation.goBack()
+                            
+                            setEmail('');
+                            setTempPass('');
+                            setType(null);
+                            setUid('')
+                            setLoadVisible(false)
+                        }).catch(error => {
+                            console.log("Erro ao tentar criar usuário", error)
+                        })
                     }
                     else {
                         Alert.alert("Erro ao tentar cadastrar usuário.\nContate Administrador do Sistema!");
@@ -122,12 +123,16 @@ function UsersCRUD({route, navigation}) {
                         value={name}
                         onChangeText={ text => setName(text)}
                     />
-                    <TextInput 
-                        style={styles.inputText} 
-                        placeholder={'E-mail'}
-                        value={email}
-                        onChangeText={ text => setEmail(text)}
-                    />
+                    {!route.params?
+                        <TextInput 
+                            style={styles.inputText} 
+                            placeholder={'E-mail'}
+                            value={email}
+                            onChangeText={ text => setEmail(text)}
+                        />
+                    :
+                        undefined
+                    }
                     {!route.params?
                         <TextInput 
                             style={styles.inputText} 
@@ -190,7 +195,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginHorizontal: '3%',
-        marginTop: '10%'
+        marginTop: '10%',
+        // borderWidth: 20,
+        // borderColor: '#000'
     },
     inputText: {
         //height: '100%',

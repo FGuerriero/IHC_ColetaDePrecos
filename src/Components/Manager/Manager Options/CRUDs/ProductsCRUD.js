@@ -5,39 +5,104 @@ import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
 import { NavigationHelpersContext } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../../../config/firebase.js";
 
-const BRANDS = ['Camil', 'Kicaldo', 'Prato Fino', 'Dona Benta', 'Renata', 'Parmalate', 'My Oh Nese!']
 
 function ProductsCRUD({route, navigation}) {
-    const [productName, setProductName] = useState(null)
-    const [productBrand, setProductBrand] = useState(null)
-    const [productDescription, setProductDescription] = useState(null)
+    const [BRANDS, setBRANDS] = useState([])
+    const [productName, setProductName] = useState('')
+    const [productBrand, setProductBrand] = useState('')
+    const [productDescription, setProductDescription] = useState('')
     const [loadVisible, setLoadVisible] = useState(false)
 
-    const GravarProduto = () => {
-        setLoadVisible(true)
-        setTimeout(() => {
-            setLoadVisible(false)
-            navigation.goBack()
-            //---------------Tratativa de Resposta da API: -----------
-
-            //-----------SUCCESS-------------------
-            // DeviceEventEmitter.emit("event.productSavedResponse", 'success')
-
-            //-----------ERROR--------------------
-            //DeviceEventEmitter.emit("event.productSavedResponse", 'fail')
-            Alert.alert("Falha ao tentar gravar Produto!! \n Tente novamente mais tarde.")
-
-        },4000)
+    const GravarProduto = async () => {
+        if (productName == '') {
+            Alert.alert("Preencha o Nome do Produto!")      
+        } else if (productBrand == '') {
+            Alert.alert("Escolha a Marca do Produto!")  
+        } else if (productDescription == '') {
+            Alert.alert("Preencha a Descrição do produto!")  
+        } else {
+            setLoadVisible(true)
+            await getDocs(collection(db, "Produtos")).then( async (snapShot) => {
+                const newProduct = snapShot.docs.filter((doc) => {
+                    return ( doc.data().nome == productName &&  doc.data().marca == productBrand)
+                })
+                //console.log("Current User: ", route.params)
+                if(newProduct[0]){
+                    if(route.params){
+                        await updateDoc(doc(db,"Produtos",route.params.id),{
+                            nome: productName,
+                            marca: productBrand,
+                            descricao: productDescription
+                        }).then((resp) => {
+                            console.log("Response: ", resp)
+                            DeviceEventEmitter.emit("event.productUpdated")
+                            Alert.alert("Dados alterados com sucesso!")
+    
+                            setProductName('');
+                            setProductBrand('');
+                            setProductDescription('')
+                            setLoadVisible(false)
+    
+                            navigation.goBack()
+                        })
+                    }else{
+                        Alert.alert("Já existe um produto cadastrado com mesmo nome e marca!","Revisar dados.")
+                        setLoadVisible(false)
+                    }
+                }else{
+                    const newProduct = await addDoc(collection(db, "Produtos"), {
+                        nome: productName,
+                        marca: productBrand,
+                        descricao: productDescription
+                    }).then( resp => {
+                        //console.log("Sucesso ao Criar Produto: ", resp)
+                        DeviceEventEmitter.emit("event.productUpdated")
+                        Alert.alert("Produto cadastrado com sucesso!")
+                        navigation.goBack()
+                        
+                        setProductName('');
+                        setProductBrand('');
+                        setProductDescription('')
+                        setLoadVisible(false)
+                    }).catch( error => {
+                        console.log("Erro ao tentar criar produto", error)
+                    })
+                }
+            })
+        }
         return
     }
 
     useEffect(() => {
         if(route.params){
-            setProductName(route.params.productType)
-            setProductBrand(route.params.productBrand)
-            setProductDescription(route.params.productDescription)
+            setProductName(route.params.nome)
+            setProductBrand(route.params.marca)
+            setProductDescription(route.params.descricao)
         }
+
+        getDocs(collection(db, "Marcas")).then( async (snapShot) => {
+            const brandsUpdated = snapShot.docs.map((doc) => {
+                return doc.data().nome
+            })
+            brandsUpdated.sort((a,b) => {
+                const nameA = a.toUpperCase(); // ignore upper and lowercase
+                const nameB = b.toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                return -1;
+                }
+                if (nameA > nameB) {
+                return 1;
+                }
+            
+                // names must be equal
+                return 0;
+            })
+            //console.log("Brands: ", brandsUpdated)
+            setBRANDS(brandsUpdated)
+            return
+        })
     }, [])
 
     return(
@@ -62,7 +127,7 @@ function ProductsCRUD({route, navigation}) {
                             onValueChange={newValue => setProductBrand(newValue)}
                             style={styles.picker}
                         >
-                            <Picker.Item label='Selecione Produto' value={null} key={0} style={styles.pickerItemGrey}/>
+                            <Picker.Item label='Selecione Marca' value={null} key={0} style={styles.pickerItemGrey}/>
                             {
                                 BRANDS.map((item, index) => {
                                     return (
@@ -75,7 +140,7 @@ function ProductsCRUD({route, navigation}) {
                     <TextInput 
                         style={styles.inputTextDescription} 
                         placeholder={'Descrição do Produto'}
-                        onChangeText={ text => setProductName(text)}
+                        onChangeText={ text => setProductDescription(text)}
                         value={productDescription}
                         multiline={true}
                     />
@@ -115,7 +180,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginHorizontal: '3%',
-        paddingTop: '2%'
+        paddingTop: '10%'
     },
     inputText: {
         //height: '100%',
@@ -139,7 +204,7 @@ const styles = StyleSheet.create({
         padding: '4%'
     },
     pickerContainer: {
-        height: '11%',
+        height: '18%',
         borderColor: '#868686',
         borderWidth: 2,
         width:'100%',
@@ -153,7 +218,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flex: 0.14,
         width: '100%',
-        marginVertical: '10%'
+        marginVertical: '15%'
     },
     txtBtnGravar: {
         fontSize: 19.76,

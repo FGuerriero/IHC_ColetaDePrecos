@@ -1,12 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert,
+    ActivityIndicator
+} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../../config/firebase.js";
 
 import Header from '../../Header/Header';
 
 // const filteredRef = query(
-//     collectionRef,
+//     collection(db,"Usuarios"),
 //     where(`recipiant`, "==", `${searchValue}`)
 //   );
 
@@ -22,19 +24,49 @@ function Users({navigation}) {
     const [listItems, setListItems] = useState(usersAll)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const updateUsers = () => {
         getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
             const usersColl = snapShot.docs.map((doc,index) => {
-                //index === 0 ?console.log("ID"+index+": ", doc._document) : undefined
+                //index === 0 ?console.log("ID"+index+": ", doc._document.key.path) : undefined
                 return {...doc.data(), id: doc._document.key.path.segments.pop()}
             })
             //console.log("Users: ", usersColl)
+            
+            usersColl.sort( SortArrayObj )
             setUsersAll(usersColl)
             setListItems(usersColl)
 
         })
         return
+    }
+
+    const deleteUser = () => {
+        setLoading(true)
+        deleteDoc(doc(db,"Usuarios",listItems[currentIndex].id)).then((resp) => {
+            console.log("Deleted: ", resp)
+            Alert.alert("Usuário excluido com sucesso!")
+            updateUsers()
+            setDeleteModalVisible(!deleteModalVisible)
+            setLoading(false)
+        }).catch((error) => {
+            Alert.alert("Erro o tentar deletar Usuário!\n",error)
+        })
+    }
+
+    function SortArrayObj(a, b) {
+        const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+        const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+      
+        // names must be equal
+        return 0;
     }
 
     useEffect(() => {
@@ -67,10 +99,14 @@ function Users({navigation}) {
                                 style={[styles.button, styles.buttonConfirm]}
                                 onPress={() => {
                                     // --------------- Handle Request to BackEnd
-                                    setDeleteModalVisible(!deleteModalVisible)
+                                    deleteUser()
                                 }}
                                 >
-                                <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                                {loading?
+                                    <ActivityIndicator animating={loading} size="large" color="#fff"/>
+                                :
+                                    <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                                }
                             </Pressable>
                             <Pressable
                                 style={[styles.button, styles.buttonCancel]}
@@ -108,67 +144,74 @@ function Users({navigation}) {
             <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('UsersCRUD')}>
                 <Text style={styles.txtNovoProduto}>NOVO USUÁRIO</Text>
             </TouchableOpacity>
-            <ScrollView style={styles.scrollContainer}>
             {
-                    listItems.map( (item,index) => {
-                        return(
-                            <View key={index} style={
-                                index === 0 ?
-                                    (currentIndex === index)?
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
-                                    :
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
-                                :
-                                    (listItems.length-1) === index ?
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                usersAll[0].email == "" ?
+                    <View style={styles.activeIndicator}>
+                        <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
+                    </View>
+                :
+                    <ScrollView style={styles.scrollContainer}>
+                    {
+                            listItems.map( (item,index) => {
+                                return(
+                                    <View key={index} style={
+                                        index === 0 ?
+                                            (currentIndex === index)?
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
+                                            :
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
                                         :
-                                            [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
-                                    :
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
-                                        :
-                                            styles.itemContainer
-                            }>
-                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {
-                                        setCurrentIndex(index)  
-                                    }}>
-                                    <View style={styles.textContainer}>
-                                        <Text style={[styles.itemTitle,]}>
-                                            {item.nome}
-                                        </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.tipo}
-                                        </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.email}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
-                                {
-                                    index === currentIndex ?
-                                            <View style={styles.itemButtons}>
-                                                <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
-                                                    <Text style={styles.textButton}>Deletar</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={styles.checkistButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
-                                                    <Text style={styles.textButton}>Checklists</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                    console.log("Editando: ", item)
-                                                    navigation.push('UsersCRUD', item)
-                                                }}>
-                                                    <Text style={styles.textButton}>Editar</Text>
-                                                </TouchableOpacity>
+                                            (listItems.length-1) === index ?
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                                                :
+                                                    [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
+                                            :
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
+                                                :
+                                                    styles.itemContainer
+                                    }>
+                                        <TouchableOpacity style={styles.itemTouchable} onPress={() => {
+                                                setCurrentIndex(index)  
+                                            }}>
+                                            <View style={styles.textContainer}>
+                                                <Text style={[styles.itemTitle,]}>
+                                                    {item.nome}
+                                                </Text>
+                                                <Text style={styles.itemSubtext}>
+                                                    {item.tipo}
+                                                </Text>
+                                                <Text style={styles.itemSubtext}>
+                                                    {item.email}
+                                                </Text>
                                             </View>
-                                    :
-                                    undefined
-                                }
-                            </View>
-                        )
-                    })
-                }
-            </ScrollView>
+                                        </TouchableOpacity>
+                                        {
+                                            index === currentIndex ?
+                                                    <View style={styles.itemButtons}>
+                                                        <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
+                                                            <Text style={styles.textButton}>Deletar</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity style={styles.checkistButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
+                                                            <Text style={styles.textButton}>Checklists</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity style={styles.editButton} onPress={() => {
+                                                            console.log("Editando: ", item)
+                                                            navigation.push('UsersCRUD', item)
+                                                        }}>
+                                                            <Text style={styles.textButton}>Editar</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                            :
+                                            undefined
+                                        }
+                                    </View>
+                                )
+                            })
+                        }
+                    </ScrollView>
+            }
         </View>
     );
 }
@@ -347,5 +390,9 @@ const styles = StyleSheet.create({
         // borderWidth: 2,
         width: 280,
         justifyContent: 'space-between'
+      },
+      activeIndicator: {
+        height: '40%',
+        paddingTop: '10%'
       }
 })

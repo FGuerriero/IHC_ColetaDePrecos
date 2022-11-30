@@ -1,55 +1,77 @@
-import React, {useState} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert,
+    ActivityIndicator 
+} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../../config/firebase.js";
 
 import Header from '../../Header/Header';
 
-const productsList = [
-    {
-        productType: 'Maionese',
-        productBrand: 'My Oh Nese!',
-        productDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        productType: 'Feijão',
-        productBrand: 'Camil',
-        productDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        productType: 'Feijão',
-        productBrand: 'Kicaldo',
-        productDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        productType: 'Arroz',
-        productBrand: 'Prato Fino',
-        productDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        productType: 'Arroz',
-        productBrand: 'Camil',
-        productDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        productType: 'Macarrão',
-        productBrand: 'Renata',
-        productDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        productType: 'Macarrão',
-        productBrand: 'Dona Benta',
-        productDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },
-]
-
 function Products({navigation}) {
-    const [listItems, setListItems] = useState(productsList)
+    const [productsAll, setProductsAll] = useState([
+        {
+            nome: '',
+            marca: '',
+            descricao: ''
+        }
+    ])
+    const [listItems, setListItems] = useState(productsAll)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+    const [loading, setLoading] = useState(false)
 
-    DeviceEventEmitter.addListener("event.productSavedResponse", (apiResponse) => {
-        if(apiResponse==='success'){
-            Alert.alert("Dados gravados com sucesso!")
-        }else if(apiResponse==='fail'){
-            Alert.alert("Falha ao tentar gravar Produto!! \n Tente novamente mais tarde.")
+    function SortArrayObj(a, b) {
+        const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+        const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1;
         }
-        setTimeout(() => {
-        }, 3000)
-    });
+        if (nameA > nameB) {
+          return 1;
+        }
+      
+        // names must be equal
+        return 0;
+    }
+
+    const updateProducts = () => {
+        getDocs(collection(db, "Produtos")).then( async (snapShot) => {
+            const productsColl = snapShot.docs.map((doc,index) => {
+                //index === 0 ?console.log("ID"+index+": ", doc._document.key.path) : undefined
+                return {...doc.data(), id: doc._document.key.path.segments.pop()}
+            })
+            //console.log("Produtos: ", productsColl)
+            
+            productsColl.sort( SortArrayObj )
+            setProductsAll(productsColl)
+            setListItems(productsColl)
+
+        })
+        return
+    }
+
+    const deleteProduct = () => {
+        setLoading(true)
+        deleteDoc(doc(db,"Produtos",listItems[currentIndex].id)).then((resp) => {
+            console.log("Deleted: ", resp)
+            Alert.alert("Produto excluido com sucesso!")
+            updateProducts()
+            setDeleteModalVisible(!deleteModalVisible)
+            setLoading(false)
+        }).catch((error) => {
+            Alert.alert("Erro o tentar deletar Produto!\n",error)
+        })
+    }
+
+    useEffect(() => {
+        //console.log("UseEffect")
+        updateProducts()
+
+        DeviceEventEmitter.addListener("event.productUpdated", () => {
+            console.log("Edited Products")
+            updateProducts()
+        });
+    },[])
 
     return (
         
@@ -66,16 +88,20 @@ function Products({navigation}) {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Deseja realmente deletar o Produto?:</Text>
-                        <Text style={styles.modalProductText}>{productsList[currentIndex].productType}, {productsList[currentIndex].productBrand} </Text>
+                        <Text style={styles.modalProductText}>{productsAll[currentIndex].nome}, {productsAll[currentIndex].marca} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
                                 onPress={() => {
                                     // --------------- Handle Request to BackEnd
-                                    setDeleteModalVisible(!deleteModalVisible)
+                                    deleteProduct()
                                 }}
                                 >
-                                <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                                {loading?
+                                    <ActivityIndicator animating={loading} size="large" color="#fff"/>
+                                :
+                                    <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                                }
                             </Pressable>
                             <Pressable
                                 style={[styles.button, styles.buttonCancel]}
@@ -102,8 +128,8 @@ function Products({navigation}) {
                         style={styles.inputText} 
                         placeholder={'Pesquise o Produto'}
                         onChangeText={ subStringItem => {
-                            setListItems(productsList.filter( item => {
-                                return item.productType.toLowerCase().includes(subStringItem.toLowerCase())
+                            setListItems(productsAll.filter( item => {
+                                return item.nome.toLowerCase().includes(subStringItem.toLowerCase())
                             }))
                             console.log(listItems)
                             return
@@ -114,61 +140,68 @@ function Products({navigation}) {
             <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('ProductsCRUD')}>
                 <Text style={styles.txtNovoProduto}>NOVO PRODUTO</Text>
             </TouchableOpacity>
-            <ScrollView style={styles.scrollContainer}>
             {
-                    listItems.map( (item,index) => {
-                        return(
-                            <View key={index} style={
-                                index === 0 ?
-                                    (currentIndex === index)?
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
-                                    :
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
-                                :
-                                    (productsList.length-1) === index ?
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                productsAll[0].nome == "" ?
+                    <View style={styles.activeIndicator}>
+                        <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
+                    </View>
+                :
+                    <ScrollView style={styles.scrollContainer}>
+                    {
+                            listItems.map( (item,index) => {
+                                return(
+                                    <View key={index} style={
+                                        index === 0 ?
+                                            (currentIndex === index)?
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
+                                            :
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
                                         :
-                                            [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
-                                    :
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
-                                        :
-                                            styles.itemContainer
-                            }>
-                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {setCurrentIndex(index)}}>
-                                    <View style={styles.textContainer}>
-                                        <Text style={[styles.itemTitle,]}>
-                                            {item.productType}
-                                        </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.productBrand}
-                                        </Text>
-                                        <Text style={styles.itemDescription}>
-                                            {item.productDescription.substring(0,50)+'...'}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
-                                {
-                                    index === currentIndex ?
-                                            <View style={styles.itemButtons}>
-                                                <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
-                                                    <Text style={styles.textButton}>Deletar</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                    navigation.push('ProductsCRUD', item)
-                                                }}>
-                                                    <Text style={styles.textButton}>Editar</Text>
-                                                </TouchableOpacity>
+                                            (productsAll.length-1) === index ?
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                                                :
+                                                    [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
+                                            :
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
+                                                :
+                                                    styles.itemContainer
+                                    }>
+                                        <TouchableOpacity style={styles.itemTouchable} onPress={() => {setCurrentIndex(index)}}>
+                                            <View style={styles.textContainer}>
+                                                <Text style={[styles.itemTitle,]}>
+                                                    {item.nome}
+                                                </Text>
+                                                <Text style={styles.itemSubtext}>
+                                                    {item.marca}
+                                                </Text>
+                                                <Text style={styles.itemDescription}>
+                                                    {item.descricao.substring(0,50)+'...'}
+                                                </Text>
                                             </View>
-                                    :
-                                    undefined
-                                }
-                            </View>
-                        )
-                    })
-                }
-            </ScrollView>
+                                        </TouchableOpacity>
+                                        {
+                                            index === currentIndex ?
+                                                    <View style={styles.itemButtons}>
+                                                        <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
+                                                            <Text style={styles.textButton}>Deletar</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity style={styles.editButton} onPress={() => {
+                                                            navigation.push('ProductsCRUD', item)
+                                                        }}>
+                                                            <Text style={styles.textButton}>Editar</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                            :
+                                            undefined
+                                        }
+                                    </View>
+                                )
+                            })
+                        }
+                    </ScrollView>
+            }       
         </View>
     );
 }
@@ -340,5 +373,9 @@ const styles = StyleSheet.create({
         // borderWidth: 2,
         width: 280,
         justifyContent: 'space-between'
+      },
+      activeIndicator: {
+        height: '40%',
+        paddingTop: '10%'
       }
 })
