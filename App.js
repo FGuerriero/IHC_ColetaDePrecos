@@ -20,6 +20,8 @@ import ForgotPass from './src/Components/Login/ForgotPass';
 import NewAccount from './src/Components/Login/NewAccount';
 
 import AuthProvider from './src/Context/context';
+import ManageChecklists from './src/Components/Manager/Manager Options/ManageChecklist';
+import ChecklistCRUD from './src/Components/Manager/Manager Options/CRUDs/ChecklistCRUD';
 
 export default function App() {
   // const [loginValidation, setLoginValidation] = useState(false)
@@ -40,12 +42,14 @@ export default function App() {
           <Stack.Screen name="Manager" component={Manager} />
             <Stack.Screen name="Products" component={Products} />
               <Stack.Screen name='ProductsCRUD' component={ProductsCRUD} />
-              <Stack.Screen name='StoresCRUD' component={StoresCRUD} />
-              <Stack.Screen name='DevicesCRUD' component={DevicesCRUD} />
-              <Stack.Screen name='UsersCRUD' component={UsersCRUD} />
             <Stack.Screen name="Stores" component={Stores} />
+              <Stack.Screen name='StoresCRUD' component={StoresCRUD} />
             <Stack.Screen name="Devices" component={Devices} />
+              <Stack.Screen name='DevicesCRUD' component={DevicesCRUD} />
             <Stack.Screen name="Users" component={Users} />
+              <Stack.Screen name='UsersCRUD' component={UsersCRUD} />
+            <Stack.Screen name="ManageChecklists" component={ManageChecklists} />
+              <Stack.Screen name='ChecklistCRUD' component={ChecklistCRUD} />
         </Stack.Navigator>
       </AuthProvider>
       {/* {

@@ -197,11 +197,11 @@ function Users({navigation}) {
                                                         <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
                                                             <Text style={styles.textButton}>Deletar</Text>
                                                         </TouchableOpacity>
-                                                        <TouchableOpacity style={styles.checkistButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
+                                                        <TouchableOpacity style={styles.checkistButton} onPress={() => navigation.push('ManageChecklists', item)}>
                                                             <Text style={styles.textButton}>Checklists</Text>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                            console.log("Editando: ", item)
+                                                            //console.log("Editando: ", item)
                                                             navigation.push('UsersCRUD', item)
                                                         }}>
                                                             <Text style={styles.textButton}>Editar</Text>
