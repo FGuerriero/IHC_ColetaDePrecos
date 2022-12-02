@@ -19,6 +19,7 @@ function Products({navigation}) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [searchText, setSearchText] = useState('')
 
     function SortArrayObj(a, b) {
         const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
@@ -45,6 +46,7 @@ function Products({navigation}) {
             productsColl.sort( SortArrayObj )
             setProductsAll(productsColl)
             setListItems(productsColl)
+            setSearchText('')
 
         })
         return
@@ -55,9 +57,10 @@ function Products({navigation}) {
         deleteDoc(doc(db,"Produtos",listItems[currentIndex].id)).then((resp) => {
             console.log("Deleted: ", resp)
             Alert.alert("Produto excluido com sucesso!")
-            updateProducts()
             setDeleteModalVisible(!deleteModalVisible)
             setLoading(false)
+            setCurrentIndex(0)
+            updateProducts()
         }).catch((error) => {
             Alert.alert("Erro o tentar deletar Produto!\n",error)
         })
@@ -88,7 +91,7 @@ function Products({navigation}) {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Deseja realmente deletar o Produto?:</Text>
-                        <Text style={styles.modalProductText}>{productsAll[currentIndex].nome}, {productsAll[currentIndex].marca} </Text>
+                        <Text style={styles.modalProductText}>{productsAll[currentIndex] ? productsAll[currentIndex].nome : undefined}, {productsAll[currentIndex] ? productsAll[currentIndex].marca : undefined} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
@@ -127,7 +130,9 @@ function Products({navigation}) {
                     <TextInput 
                         style={styles.inputText} 
                         placeholder={'Pesquise o Produto'}
+                        value={searchText}
                         onChangeText={ subStringItem => {
+                            setSearchText(subStringItem)
                             setListItems(productsAll.filter( item => {
                                 return item.nome.toLowerCase().includes(subStringItem.toLowerCase())
                             }))

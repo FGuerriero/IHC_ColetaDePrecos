@@ -25,6 +25,7 @@ function Users({navigation}) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [searchText, setSearchText] = useState('')
 
     const updateUsers = () => {
         getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
@@ -35,6 +36,7 @@ function Users({navigation}) {
             //console.log("Users: ", usersColl)
             
             usersColl.sort( SortArrayObj )
+            setSearchText('')
             setUsersAll(usersColl)
             setListItems(usersColl)
 
@@ -131,8 +133,10 @@ function Users({navigation}) {
                     />
                     <TextInput 
                         style={styles.inputText} 
+                        value ={searchText}
                         placeholder={'Pesquise Usuários'}
                         onChangeText={ subStringItem => {
+                            setSearchText(subStringItem)
                             setListItems(usersAll.filter( item => {
                                 return item.nome.toLowerCase().includes(subStringItem.toLowerCase())
                             }))

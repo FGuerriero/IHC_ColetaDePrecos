@@ -1,95 +1,84 @@
-import React, {useState} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert,
+    ActivityIndicator  
+} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../../config/firebase.js";
 
 import Header from '../../Header/Header';
 
-const devicesList = [
-    {
-        deviceNickname: 'Motorola 01',
-        deviceBrand: 'Motorola',
-        deviceModel: 'E7 Plus',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Fernando Guerriero'
-    },
-    {
-        deviceNickname: 'Motorola 02',
-        deviceBrand: 'Motorola',
-        deviceModel: 'G5 Mini',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Juliana Cruz'
-    },
-    {
-        deviceNickname: 'Xiaomi 01',
-        deviceBrand: 'Xiaomi',
-        deviceModel: 'Mi11',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Anthony Castro'
-    },
-    {
-        deviceNickname: 'Motorola 01',
-        deviceBrand: 'Motorola',
-        deviceModel: 'E7 Plus',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Fernando Guerriero'
-    },
-    {
-        deviceNickname: 'Motorola 02',
-        deviceBrand: 'Motorola',
-        deviceModel: 'G5 Mini',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Juliana Cruz'
-    },
-    {
-        deviceNickname: 'Xiaomi 01',
-        deviceBrand: 'Xiaomi',
-        deviceModel: 'Mi11',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Anthony Castro'
-    },
-    {
-        deviceNickname: 'Motorola 01',
-        deviceBrand: 'Motorola',
-        deviceModel: 'E7 Plus',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Fernando Guerriero'
-    },
-    {
-        deviceNickname: 'Motorola 02',
-        deviceBrand: 'Motorola',
-        deviceModel: 'G5 Mini',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Juliana Cruz'
-    },
-    {
-        deviceNickname: 'Xiaomi 01',
-        deviceBrand: 'Xiaomi',
-        deviceModel: 'Mi11',
-        deviceMAC: '0F:AC:FF:04:50:01',
-        deviceSponsor: 'Anthony Castro'
-    },
-]
 
 function Devices({navigation}) {
+    const [devicesList,setDevicesList] = useState([
+        {
+            nome: '',
+            marca: '',
+            modelo: '',
+            endereçoMAC: '',
+            usuarioResponsavel: ''
+        }
+    ])
     const [listItems, setListItems] = useState(devicesList)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
-    
-    const [nickName, setNickName] = useState(null)
-    const [brand, setBrand] = useState(null)
-    const [model, setModel] = useState(null)
-    const [addressMAC, setAddressMAC] = useState(null)
-    const [sponsor, setSponsor] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const [searchText, setSearchText] = useState('')
 
-    DeviceEventEmitter.addListener("event.deviceSavedResponse", (apiResponse) => {
-        if(apiResponse==='success'){
-            Alert.alert("Dados gravados com sucesso!")
-        }else if(apiResponse==='fail'){
-            Alert.alert("Falha ao tentar gravar Dispositivo!! \n Tente novamente mais tarde.")
+    function SortArrayObj(a, b) {
+        const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+        const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1;
         }
-        // setTimeout(() => {
-        // }, 3000)
-    });
+        if (nameA > nameB) {
+          return 1;
+        }
+      
+        // names must be equal
+        return 0;
+    }
+
+    const updateDevices = () => {
+        getDocs(collection(db, "Dispositivos")).then( async (snapShot) => {
+            const devicesColl = snapShot.docs.map((doc,index) => {
+                //index === 0 ?console.log("ID"+index+": ", doc._document.key.path) : undefined
+                return {...doc.data(), id: doc._document.key.path.segments.pop()}
+            })
+            //console.log("Produtos: ", devicesColl)
+            
+            devicesColl.sort( SortArrayObj )
+            setDevicesList(devicesColl)
+            setListItems(devicesColl)
+            setSearchText('')
+
+        })
+        return
+    }
+
+    const deleteDevice = () => {
+        setLoading(true)
+        deleteDoc(doc(db,"Dispositivos",listItems[currentIndex].id)).then((resp) => {
+            console.log("Deleted: ", resp)
+            Alert.alert("Dispositivo excluido com sucesso!")
+            updateDevices()
+            setDeleteModalVisible(!deleteModalVisible)
+            setLoading(false)
+            setCurrentIndex(0)
+        }).catch((error) => {
+            Alert.alert("Erro o tentar deletar Dispositivo!\n",error)
+        })
+    }
+
+    useEffect(() => {
+        //console.log("UseEffect")
+        updateDevices()
+
+        DeviceEventEmitter.addListener("event.deviceUpdated", () => {
+            console.log("Edited Device!")
+            updateDevices()
+        });
+        console.log("UseEffect")
+    },[])
 
     return (
         
@@ -106,16 +95,20 @@ function Devices({navigation}) {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Deseja realmente deletar o Dispositivo?:</Text>
-                        <Text style={styles.modalStoreText}>{devicesList[currentIndex].deviceNickname}, {devicesList[currentIndex].deviceSponsor} </Text>
+                        <Text style={styles.modalStoreText}>{devicesList[currentIndex] ? devicesList[currentIndex].nome : undefined}, {devicesList[currentIndex] ? devicesList[currentIndex].usuarioResponsavel : undefined} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
                                 onPress={() => {
                                     // --------------- Handle Request to BackEnd
-                                    setDeleteModalVisible(!deleteModalVisible)
+                                    deleteDevice()
                                 }}
-                                >
-                                <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                            >
+                                {loading?
+                                    <ActivityIndicator animating={loading} size="large" color="#fff"/>
+                                :
+                                    <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                                }
                             </Pressable>
                             <Pressable
                                 style={[styles.button, styles.buttonCancel]}
@@ -141,9 +134,11 @@ function Devices({navigation}) {
                     <TextInput 
                         style={styles.inputText} 
                         placeholder={'Pesquise o Device'}
+                        value={searchText}
                         onChangeText={ subStringItem => {
+                            setSearchText(subStringItem)
                             setListItems(devicesList.filter( item => {
-                                return item.deviceNickname.toLowerCase().includes(subStringItem.toLowerCase())
+                                return item.nome.toLowerCase().includes(subStringItem.toLowerCase())
                             }))
                             return
                         }}
@@ -153,66 +148,73 @@ function Devices({navigation}) {
             <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('DevicesCRUD')}>
                 <Text style={styles.txtNovoProduto}>NOVO DISPOSITIVO</Text>
             </TouchableOpacity>
-            <ScrollView style={styles.scrollContainer}>
             {
-                    listItems.map( (item,index) => {
-                        return(
-                            <View key={index} style={
-                                index === 0 ?
-                                    (currentIndex === index)?
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
-                                    :
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
-                                :
-                                    (devicesList.length-1) === index ?
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                devicesList[0].nome == "" ?
+                    <View style={styles.activeIndicator}>
+                        <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
+                    </View>
+                :
+                    <ScrollView style={styles.scrollContainer}>
+                    {
+                            listItems.map( (item,index) => {
+                                return(
+                                    <View key={index} style={
+                                        index === 0 ?
+                                            (currentIndex === index)?
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
+                                            :
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
                                         :
-                                            [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
-                                    :
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
-                                        :
-                                            styles.itemContainer
-                            }>
-                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {
-                                        setCurrentIndex(index)  
-                                    }}>
-                                    <View style={styles.textContainer}>
-                                        <Text style={[styles.itemTitle,]}>
-                                            {item.deviceNickname}
-                                        </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.deviceBrand}
-                                        </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.deviceModel}
-                                        </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.deviceSponsor}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
-                                {
-                                    index === currentIndex ?
-                                            <View style={styles.itemButtons}>
-                                                <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
-                                                    <Text style={styles.textButton}>Deletar</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                    navigation.push('DevicesCRUD', item)
-                                                }}>
-                                                    <Text style={styles.textButton}>Editar</Text>
-                                                </TouchableOpacity>
+                                            (devicesList.length-1) === index ?
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                                                :
+                                                    [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
+                                            :
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
+                                                :
+                                                    styles.itemContainer
+                                    }>
+                                        <TouchableOpacity style={styles.itemTouchable} onPress={() => {
+                                                setCurrentIndex(index)  
+                                            }}>
+                                            <View style={styles.textContainer}>
+                                                <Text style={[styles.itemTitle,]}>
+                                                    {item.nome}
+                                                </Text>
+                                                <Text style={styles.itemSubtext}>
+                                                    {item.marca}
+                                                </Text>
+                                                <Text style={styles.itemSubtext}>
+                                                    {item.modelo}
+                                                </Text>
+                                                <Text style={styles.itemSubtext}>
+                                                    {item.usuarioResponsavel}
+                                                </Text>
                                             </View>
-                                    :
-                                    undefined
-                                }
-                            </View>
-                        )
-                    })
-                }
-            </ScrollView>
+                                        </TouchableOpacity>
+                                        {
+                                            index === currentIndex ?
+                                                    <View style={styles.itemButtons}>
+                                                        <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
+                                                            <Text style={styles.textButton}>Deletar</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity style={styles.editButton} onPress={() => {
+                                                            navigation.push('DevicesCRUD', item)
+                                                        }}>
+                                                            <Text style={styles.textButton}>Editar</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                            :
+                                            undefined
+                                        }
+                                    </View>
+                                )
+                            })
+                        }
+                    </ScrollView>
+            }
         </View>
     );
 }
@@ -384,5 +386,9 @@ const styles = StyleSheet.create({
         // borderWidth: 2,
         width: 280,
         justifyContent: 'space-between'
+      },
+      activeIndicator: {
+        height: '40%',
+        paddingTop: '10%'
       }
 })

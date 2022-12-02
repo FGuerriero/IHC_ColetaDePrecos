@@ -44,8 +44,8 @@ function UsersCRUD({route, navigation}) {
                     return doc.data().email == email
                 })
                 console.log("Current User: ", route.params)
-                if(newUser[0]){
-                    if(route.params){
+                if(route.params){
+                    if(newUser.length == 1){
                         await updateDoc(doc(db,"Usuarios",route.params.id),{
                             nome: name,
                             email,

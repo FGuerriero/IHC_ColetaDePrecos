@@ -1,75 +1,80 @@
-import React, {useState} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Pressable, DeviceEventEmitter, Alert,
+    ActivityIndicator  
+} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../../config/firebase.js";
 
 import Header from '../../Header/Header';
 
-const storesList = [
-    {
-        storeName: 'Extra Pirituba',
-        franchise: 'Extra',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Extra Freguesia',
-        franchise: 'Extra',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Carrefour Pirituba',
-        franchise: 'Carrefour',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Carrefour Freguesia',
-        franchise: 'Carrefour',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Pão de Açucar Mutinga',
-        franchise: 'Pão de Açucar',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Assai Tietê',
-        franchise: 'Assai',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Extra Pirituba',
-        franchise: 'Extra',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Extra Freguesia',
-        franchise: 'Extra',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Carrefour Pirituba',
-        franchise: 'Carrefour',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Carrefour Freguesia',
-        franchise: 'Carrefour',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Pão de Açucar Mutinga',
-        franchise: 'Pão de Açucar',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },{
-        storeName: 'Assai Tietê',
-        franchise: 'Assai',
-        fullAddress: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo cons'
-    },
-]
-
 function Stores({navigation}) {
+    const [storesList,setStoresList] = useState([
+        {
+            nome: '',
+            franquia: '',
+            endereço: ''
+        }
+    ])
     const [listItems, setListItems] = useState(storesList)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [searchText, setSearchText] = useState('')
 
-    DeviceEventEmitter.addListener("event.storeSavedResponse", (apiResponse) => {
-        if(apiResponse==='success'){
-            Alert.alert("Dados gravados com sucesso!")
-        }else if(apiResponse==='fail'){
-            Alert.alert("Falha ao tentar gravar Loja!! \n Tente novamente mais tarde.")
+    function SortArrayObj(a, b) {
+        const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+        const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1;
         }
-        // setTimeout(() => {
-        // }, 3000)
-    });
+        if (nameA > nameB) {
+          return 1;
+        }
+      
+        // names must be equal
+        return 0;
+    }
+
+    const updateStores = () => {
+        getDocs(collection(db, "Lojas")).then( async (snapShot) => {
+            const storesColl = snapShot.docs.map((doc,index) => {
+                //index === 0 ?console.log("ID"+index+": ", doc._document.key.path) : undefined
+                return {...doc.data(), id: doc._document.key.path.segments.pop()}
+            })
+            //console.log("Produtos: ", storesColl)
+            
+            storesColl.sort( SortArrayObj )
+            setStoresList(storesColl)
+            setListItems(storesColl)
+            setSearchText('')
+
+        })
+        return
+    }
+
+    const deleteStore = () => {
+        setLoading(true)
+        deleteDoc(doc(db,"Lojas",listItems[currentIndex].id)).then((resp) => {
+            console.log("Deleted: ", resp)
+            Alert.alert("Loja excluida com sucesso!")
+            updateStores()
+            setDeleteModalVisible(!deleteModalVisible)
+            setLoading(false)
+        }).catch((error) => {
+            Alert.alert("Erro o tentar deletar Loja!\n",error)
+        })
+    }
+
+    useEffect(() => {
+        //console.log("UseEffect")
+        updateStores()
+
+        DeviceEventEmitter.addListener("event.storeUpdated", () => {
+            console.log("Edited Store!")
+            updateStores()
+        });
+        console.log("UseEffect")
+    },[])
 
     return (
         
@@ -86,16 +91,20 @@ function Stores({navigation}) {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Deseja realmente deletar a Loja?:</Text>
-                        <Text style={styles.modalStoreText}>{storesList[currentIndex].storeName}, {storesList[currentIndex].franchise} </Text>
+                        <Text style={styles.modalStoreText}>{storesList[currentIndex] ? storesList[currentIndex].nome : ''}, {storesList[currentIndex] ? storesList[currentIndex].franquia : ''} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
                                 onPress={() => {
                                     // --------------- Handle Request to BackEnd
-                                    setDeleteModalVisible(!deleteModalVisible)
+                                    deleteStore()
                                 }}
-                                >
-                                <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                            >
+                                {loading?
+                                    <ActivityIndicator animating={loading} size="large" color="#fff"/>
+                                :
+                                    <Text style={styles.modalButtonTextStyle}>Deletar</Text>
+                                }
                             </Pressable>
                             <Pressable
                                 style={[styles.button, styles.buttonCancel]}
@@ -121,9 +130,11 @@ function Stores({navigation}) {
                     <TextInput 
                         style={styles.inputText} 
                         placeholder={'Pesquise a Loja'}
+                        value={searchText}
                         onChangeText={ subStringItem => {
+                            setSearchText(subStringItem)
                             setListItems(storesList.filter( item => {
-                                return item.storeName.toLowerCase().includes(subStringItem.toLowerCase())
+                                return item.nome.toLowerCase().includes(subStringItem.toLowerCase())
                             }))
                             return
                         }}
@@ -133,63 +144,68 @@ function Stores({navigation}) {
             <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('StoresCRUD')}>
                 <Text style={styles.txtNovoProduto}>NOVA LOJA</Text>
             </TouchableOpacity>
-            <ScrollView style={styles.scrollContainer}>
             {
-                    listItems.map( (item,index) => {
-                        return(
-                            <View key={index} style={
-                                index === 0 ?
-                                    (currentIndex === index)?
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
-                                    :
-                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
-                                :
-                                    (storesList.length-1) === index ?
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                storesList[0].nome == "" ?
+                    <View style={styles.activeIndicator}>
+                        <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
+                    </View>
+                :
+                    <ScrollView style={styles.scrollContainer}>
+                        {
+                            listItems.map( (item,index) => {
+                                return(
+                                    <View key={index} style={
+                                        index === 0 ?
+                                            (currentIndex === index)?
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
+                                            :
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
                                         :
-                                            [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
-                                    :
-                                        (currentIndex === index)?
-                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
-                                        :
-                                            styles.itemContainer
-                            }>
-                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {
-                                        setCurrentIndex(index)  
-                                    }}>
-                                    <View style={styles.textContainer}>
-                                        <Text style={[styles.itemTitle,]}>
-                                            {item.storeName}
-                                        </Text>
-                                        <Text style={styles.itemSubtext}>
-                                            {item.franchise}
-                                        </Text>
-                                        <Text style={styles.itemDescription}>
-                                            {item.fullAddress.substring(0,50)+'...'}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
-                                {
-                                    index === currentIndex ?
-                                            <View style={styles.itemButtons}>
-                                                <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
-                                                    <Text style={styles.textButton}>Deletar</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                    navigation.push('StoresCRUD', item)
-                                                }}>
-                                                    <Text style={styles.textButton}>Editar</Text>
-                                                </TouchableOpacity>
+                                            (storesList.length-1) === index ?
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
+                                                :
+                                                    [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
+                                            :
+                                                (currentIndex === index)?
+                                                    [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
+                                                :
+                                                    styles.itemContainer
+                                    }>
+                                        <TouchableOpacity style={styles.itemTouchable} onPress={() => { setCurrentIndex(index) }}>
+                                            <View style={styles.textContainer}>
+                                                <Text style={[styles.itemTitle,]}>
+                                                    {item.nome}
+                                                </Text>
+                                                <Text style={styles.itemSubtext}>
+                                                    {item.franquia}
+                                                </Text>
+                                                <Text style={styles.itemDescription}>
+                                                    {item.endereço.substring(0,50)+'...'}
+                                                </Text>
                                             </View>
-                                    :
-                                    undefined
-                                }
-                            </View>
-                        )
-                    })
-                }
-            </ScrollView>
+                                        </TouchableOpacity>
+                                        {
+                                            index === currentIndex ?
+                                                    <View style={styles.itemButtons}>
+                                                        <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
+                                                            <Text style={styles.textButton}>Deletar</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity style={styles.editButton} onPress={() => {
+                                                            navigation.push('StoresCRUD', item)
+                                                        }}>
+                                                            <Text style={styles.textButton}>Editar</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                            :
+                                            undefined
+                                        }
+                                    </View>
+                                )
+                            })
+                        }
+                    </ScrollView>
+            }
         </View>
     );
 }
@@ -361,5 +377,9 @@ const styles = StyleSheet.create({
         // borderWidth: 2,
         width: 280,
         justifyContent: 'space-between'
+      },
+      activeIndicator: {
+        height: '40%',
+        paddingTop: '10%'
       }
 })

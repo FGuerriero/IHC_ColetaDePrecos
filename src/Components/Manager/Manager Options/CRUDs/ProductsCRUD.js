@@ -3,7 +3,6 @@ import { Text, StyleSheet, View, ScrollView, TextInput, Modal, TouchableOpacity,
 import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
-import { NavigationHelpersContext } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../../../config/firebase.js";
 
@@ -13,6 +12,7 @@ function ProductsCRUD({route, navigation}) {
     const [productName, setProductName] = useState('')
     const [productBrand, setProductBrand] = useState('')
     const [productDescription, setProductDescription] = useState('')
+    
     const [loadVisible, setLoadVisible] = useState(false)
 
     const GravarProduto = async () => {
@@ -29,8 +29,8 @@ function ProductsCRUD({route, navigation}) {
                     return ( doc.data().nome == productName &&  doc.data().marca == productBrand)
                 })
                 //console.log("Current User: ", route.params)
-                if(newProduct[0]){
-                    if(route.params){
+                if(route.params){
+                    if(newProduct.length <= 1){
                         await updateDoc(doc(db,"Produtos",route.params.id),{
                             nome: productName,
                             marca: productBrand,
@@ -52,23 +52,28 @@ function ProductsCRUD({route, navigation}) {
                         setLoadVisible(false)
                     }
                 }else{
-                    const newProduct = await addDoc(collection(db, "Produtos"), {
-                        nome: productName,
-                        marca: productBrand,
-                        descricao: productDescription
-                    }).then( resp => {
-                        //console.log("Sucesso ao Criar Produto: ", resp)
-                        DeviceEventEmitter.emit("event.productUpdated")
-                        Alert.alert("Produto cadastrado com sucesso!")
-                        navigation.goBack()
-                        
-                        setProductName('');
-                        setProductBrand('');
-                        setProductDescription('')
+                    if(newProduct.length == 0){
+                        const newProduct = await addDoc(collection(db, "Produtos"), {
+                            nome: productName,
+                            marca: productBrand,
+                            descricao: productDescription
+                        }).then( resp => {
+                            //console.log("Sucesso ao Criar Produto: ", resp)
+                            DeviceEventEmitter.emit("event.productUpdated")
+                            Alert.alert("Produto cadastrado com sucesso!")
+                            navigation.goBack()
+                            
+                            setProductName('');
+                            setProductBrand('');
+                            setProductDescription('')
+                            setLoadVisible(false)
+                        }).catch( error => {
+                            console.log("Erro ao tentar criar produto", error)
+                        })
+                    }else{
+                        Alert.alert("Já existe um produto cadastrado com mesmo nome e marca!","Revisar dados.")
                         setLoadVisible(false)
-                    }).catch( error => {
-                        console.log("Erro ao tentar criar produto", error)
-                    })
+                    }
                 }
             })
         }

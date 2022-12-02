@@ -1,7 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, ScrollView, TextInput, Modal, TouchableOpacity, ActivitstoreNameyIndicator, DeviceEventEmitter, Alert, ActivityIndicator } from 'react-native';
+import { Text, StyleSheet, View, ScrollView, TextInput, Modal, TouchableOpacity, ActivitstoreNameyIndicator, 
+    DeviceEventEmitter, Alert, ActivityIndicator 
+} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Header from '../../../Header/Header';
+import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../../../config/firebase.js";
 
 function StoresCRUD({route, navigation}) {
     const [storeName, setStoreName] = useState(null)
@@ -9,29 +12,78 @@ function StoresCRUD({route, navigation}) {
     const [address, setAddress] = useState(null)
     const [loadVisible, setLoadVisible] = useState(false)
 
-    const GravarLoja = () => {
-        setLoadVisible(true)
-        setTimeout(() => {
-            setLoadVisible(false)
-            navigation.goBack()
-            //---------------Tratativa de Resposta da API: -----------
-
-            //-----------SUCCESS-------------------
-            // DeviceEventEmitter.emit("event.productSavedResponse", 'success')
-
-            //-----------ERROR--------------------
-            //DeviceEventEmitter.emit("event.storeSavedResponse", 'fail')
-            Alert.alert("Falha ao tentar gravar Loja!! \n Tente novamente mais tarde.")
-
-        },1000)
+    const GravarLoja = async () => {
+        if (storeName == '') {
+            Alert.alert("Preencha o Nome da Loja!")      
+        } else if (franchise == '') {
+            Alert.alert("Preencha a Franquia!")  
+        } else if (address == '') {
+            Alert.alert("Preencha o Endereço!")  
+        } else {
+            setLoadVisible(true)
+            await getDocs(collection(db, "Lojas")).then( async (snapShot) => {
+                const newStore = snapShot.docs.filter((doc) => {
+                    return ( doc.data().nome == storeName &&  doc.data().franquia == franchise)
+                })
+                //console.log("Current User: ", route.params)
+                if(route.params){
+                    if(newStore.length <= 1){
+                        await updateDoc(doc(db,"Lojas",route.params.id),{
+                            nome: storeName,
+                            franquia: franchise,
+                            endereço: address
+                        }).then((resp) => {
+                            console.log("Response: ", resp)
+                            DeviceEventEmitter.emit("event.storeUpdated")
+                            Alert.alert("Dados alterados com sucesso!")
+    
+                            setStoreName('');
+                            setFranchise('');
+                            setAddress('')
+                            setLoadVisible(false)
+    
+                            navigation.goBack()
+                        }).catch(error => {
+                            Alert.alert(error)
+                        })
+                    }else{
+                        Alert.alert("Já existe uma Loja cadastrada com mesmo nome e franquia!","Revisar dados.")
+                        setLoadVisible(false)
+                    }
+                }else{
+                    if(newStore.length == 0){
+                        const newStore = await addDoc(collection(db, "Lojas"), {
+                            nome: storeName,
+                            franquia: franchise,
+                            endereço: address
+                        }).then( resp => {
+                            //console.log("Sucesso ao Criar Produto: ", resp)
+                            DeviceEventEmitter.emit("event.storeUpdated")
+                            Alert.alert("Loja cadastrada com sucesso!")
+                            navigation.goBack()
+                            
+                            setStoreName('');
+                            setFranchise('');
+                            setAddress('')
+                            setLoadVisible(false)
+                        }).catch( error => {
+                            console.log("Erro ao tentar criar Loja", error)
+                        })
+                    }else{
+                        Alert.alert("Já existe uma Loja cadastrada com mesmo nome e franquia!","Revisar dados.")
+                        setLoadVisible(false)
+                    }
+                }
+            })
+        }
         return
     }
 
     useEffect(() => {
         if(route.params){
-            setStoreName(route.params.storeName)
-            setFranchise(route.params.franchise)
-            setAddress(route.params.fullAddress)
+            setStoreName(route.params.nome)
+            setFranchise(route.params.franquia)
+            setAddress(route.params.endereço)
         }
     }, [])
 
@@ -87,7 +139,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     btnBackContainer: {
-        height: '10%',
+        height: '25%',
         flexDirection: 'row',
         alignItems: 'center'
     },
@@ -98,15 +150,16 @@ const styles = StyleSheet.create({
     bodyContainer: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
-        marginHorizontal: '3%'
+        justifyContent: 'space-between',
+        marginHorizontal: '3%',
+        paddingBottom: '10%'
     },
     inputText: {
         //height: '100%',
         width: '100%',
         fontSize: 27,
         marginLeft: '2%',
-        marginBottom: '5%',
+        marginBottom: '7%',
         borderColor: '#868686',
         borderWidth: 2,
         borderRadius: 9.5,
@@ -140,7 +193,7 @@ const styles = StyleSheet.create({
         margin: '10%',
         justifyContent: 'center',
         width: '100%',
-        marginTop: '10%',
+        marginVertical: '10%',
         height: 40
     },
     txtBtnGravar: {
