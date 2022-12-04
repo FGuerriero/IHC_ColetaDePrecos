@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert, ScrollView, Image } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
 import Header from '../../../Header/Header';
@@ -15,12 +15,57 @@ function ChecklistCRUD({route, navigation}) {
         {
             nome: 'Leite',
             marca: 'Parmalate',
-            descricao: ''
+            descricao: '',
+            id: 'abcd'
         },{
             nome: 'Arroz',
             marca: 'Prato Fino',
-            descricao: ''
-        }
+            descricao: '',
+            id: 'abcde'
+        },{
+            nome: 'Leite',
+            marca: 'Parmalate',
+            descricao: '',
+            id: 'abcdf'
+        },{
+            nome: 'Arroz',
+            marca: 'Prato Fino',
+            descricao: '',
+            id: 'abcdg'
+        },{
+            nome: 'Leite',
+            marca: 'Parmalate',
+            descricao: '',
+            id: 'abcdh'
+        },{
+            nome: 'Arroz',
+            marca: 'Prato Fino',
+            descricao: '',
+            id: 'abcdi'
+        },
+    ])
+    const [productsOnList, setProductsOnList] = useState([
+        {
+            nome: 'Leite',
+            marca: 'Parmalate',
+            descricao: '',
+            id: 'abcd'
+        },{
+            nome: 'Leite',
+            marca: 'Parmalate',
+            descricao: '',
+            id: 'abcdf'
+        },{
+            nome: 'Leite',
+            marca: 'Parmalate',
+            descricao: '',
+            id: 'abcdh'
+        },{
+            nome: 'Arroz',
+            marca: 'Prato Fino',
+            descricao: '',
+            id: 'abcdi'
+        },
     ])
     const [listItems, setListItems] = useState(productsAll)
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -39,8 +84,36 @@ function ChecklistCRUD({route, navigation}) {
             setType(route.params.tipo)
             setUid(route.params.uid)
         }
+        console.log(("Teste: ", !!1))
     }, [])
 
+    const setSelected = (itemID) => {
+        //console.log("ItemID: ",itemID)
+        let indicator = false
+        productsOnList.forEach((prod,index) => {
+            if (Object.values(prod).indexOf(itemID) > -1) {
+                //console.log("Index: ",Object.values(prod).indexOf(itemID))
+                indicator = true
+            }
+            //console.log("Produto"+index+": ", Object.values(prod).indexOf(itemID)>-1)
+        })
+        return indicator
+    }
+
+    const pushPopListItems = (item) => {
+        let indicator = false
+        productsOnList.forEach( (prod,index) => {
+            if (Object.values(prod).indexOf(item.id) > -1) {
+                //console.log("Index: ",Object.values(prod).indexOf(itemID))
+                indicator = true
+            }
+        })
+        if(indicator){
+
+        }else{
+
+        }
+    }
     const GravarDevice = async () => {
         if (name == '') {
             Alert.alert("Preencha Nome do Usuário")      
@@ -128,110 +201,90 @@ function ChecklistCRUD({route, navigation}) {
                     <AntDesign name="leftcircle" size={40} color='#80808070' />
                 </TouchableOpacity>
             </View>
-            <ScrollView>
-                <View style={styles.bodyContainer}>
-                    <View style={styles.pickerContainer}>
-                        <Picker
-                            selectedValue={type}
-                            onValueChange={newValue => setType(newValue)}
-                            style={styles.picker}
-                        >
-                            <Picker.Item label='Loja' value={type} key={0} style={styles.pickerItemGrey}/>
-                            {
-                                accessLvls.map((item, index) => {
-                                    return (
-                                        <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+            <View style={styles.bodyContainer}>
+                <View style={styles.pickerContainer}>
+                    <Picker
+                        selectedValue={type}
+                        onValueChange={newValue => setType(newValue)}
+                        style={styles.picker}
+                    >
+                        <Picker.Item label='Loja' value={type} key={0} style={styles.pickerItemGrey}/>
+                        {
+                            accessLvls.map((item, index) => {
+                                return (
+                                    <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+                                )
+                            })
+                        }
+                    </Picker>
+                </View>
+                <TextInput 
+                    style={styles.inputText} 
+                    placeholder={'Data: DD/MM/AAAA'}
+                    value={name}
+                    onChangeText={ text => setName(text)}
+                />
+                {
+                    productsAll[0].nome == "" ?
+                        <View style={styles.activeIndicator}>
+                            <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
+                        </View>
+                    :
+                        <ScrollView style={styles.scrollContainer}>
+                        {
+                                listItems.map( (item,index) => {
+                                    return(
+                                        <View key={index} style={
+                                            index === 0 ?
+                                                [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
+                                            :
+                                                (listItems.length-1) === index ?
+                                                        [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
+                                                :
+                                                        styles.itemContainer
+                                        }>
+                                            <TouchableOpacity style={styles.itemTouchable} onPress={() => {
+                                                    setCurrentIndex(index)  
+                                                }}>
+                                                <View style={styles.textContainer}>
+                                                    <Text style={[styles.itemTitle,]}>
+                                                        {item.nome}
+                                                    </Text>
+                                                    <Text style={styles.itemSubtext}>
+                                                        {item.marca}
+                                                    </Text>
+                                                </View>
+                                                <View style={styles.selectionBoxContainer}>
+                                                    {
+                                                        
+                                                        setSelected(item.id)?
+                                                            <Image 
+                                                                source={require('../../../../../assets/selected.png')} 
+                                                            /> 
+                                                        :
+                                                            <Image 
+                                                                source={require('../../../../../assets/unselected.png')}
+                                                            />
+                                                    }
+                                                </View>
+                                            </TouchableOpacity>
+                                        </View>
                                     )
                                 })
                             }
-                        </Picker>
-                    </View>
-                    <TextInput 
-                        style={styles.inputText} 
-                        placeholder={'Data: DD/MM/AAAA'}
-                        value={name}
-                        onChangeText={ text => setName(text)}
-                    />
+                        </ScrollView>
+                }
+                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarDevice()}>
+                    <Text style={styles.txtBtnGravar}>
                     {
-                        productsAll[0].nome == "" ?
-                            <View style={styles.activeIndicator}>
-                                <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
-                            </View>
+                        loadVisible ? 
+                            <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
                         :
-                            <View style={styles.scrollContainer}>
-                            {
-                                    listItems.map( (item,index) => {
-                                        return(
-                                            <View key={index} style={
-                                                index === 0 ?
-                                                    (currentIndex === index)?
-                                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginBottom: '5%'}]
-                                                    :
-                                                        [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21}]
-                                                :
-                                                    (listItems.length-1) === index ?
-                                                        (currentIndex === index)?
-                                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%'}]
-                                                        :
-                                                            [styles.itemContainer, {borderBottomLeftRadius: 21, borderBottomRightRadius: 21}]
-                                                    :
-                                                        (currentIndex === index)?
-                                                            [styles.itemContainer, {borderTopLeftRadius: 21, borderTopRightRadius: 21, marginTop: '5%', marginBottom: '5%'}]
-                                                        :
-                                                            styles.itemContainer
-                                            }>
-                                                <TouchableOpacity style={styles.itemTouchable} onPress={() => {
-                                                        setCurrentIndex(index)  
-                                                    }}>
-                                                    <View style={styles.textContainer}>
-                                                        <Text style={[styles.itemTitle,]}>
-                                                            {item.nome}
-                                                        </Text>
-                                                        <Text style={styles.itemSubtext}>
-                                                            {item.tipo}
-                                                        </Text>
-                                                        <Text style={styles.itemSubtext}>
-                                                            {item.email}
-                                                        </Text>
-                                                    </View>
-                                                </TouchableOpacity>
-                                                {
-                                                    index === currentIndex ?
-                                                            <View style={styles.itemButtons}>
-                                                                <TouchableOpacity style={styles.deleteButton} onPress={() => setDeleteModalVisible(!deleteModalVisible)}>
-                                                                    <Text style={styles.textButton}>Deletar</Text>
-                                                                </TouchableOpacity>
-                                                                <TouchableOpacity style={styles.checkistButton} onPress={() => navigation.push('ManageChecklists', item)}>
-                                                                    <Text style={styles.textButton}>Checklists</Text>
-                                                                </TouchableOpacity>
-                                                                <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                                    //console.log("Editando: ", item)
-                                                                    navigation.push('UsersCRUD', item)
-                                                                }}>
-                                                                    <Text style={styles.textButton}>Editar</Text>
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                    :
-                                                    undefined
-                                                }
-                                            </View>
-                                        )
-                                    })
-                                }
-                            </View>
+                            'GRAVAR'
                     }
-                    <TouchableOpacity style={styles.btnGravar} onPress={() => GravarDevice()}>
-                        <Text style={styles.txtBtnGravar}>
-                        {
-                            loadVisible ? 
-                                <ActivityIndicator animating={loadVisible} size="large" color="#fff"/>
-                            :
-                                'GRAVAR'
-                        }
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+                    </Text>
+                </TouchableOpacity>
+            </View>
         </View>
     )
 }
@@ -256,7 +309,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginHorizontal: '3%',
-        marginTop: '10%',
+        //marginTop: '5%',
         // borderWidth: 20,
         // borderColor: '#000'
     },
@@ -269,8 +322,9 @@ const styles = StyleSheet.create({
         borderColor: '#868686',
         borderWidth: 2,
         borderRadius: 9.5,
-        flex: .1,
-        padding: '4%'
+        //flex: .1,
+        padding: '4%',
+        paddingLeft: 15
     },
     inputTextDescription: {
         width: '100%',
@@ -299,10 +353,9 @@ const styles = StyleSheet.create({
         margin: '5%',
         height: 40,
         justifyContent: 'center',
-        flex: 0.14,
+        //flex: 0.14,
         width: '100%',
-        marginTop: '30%',
-        marginBottom: '20%'
+        marginVertical: '10%',
     },
     txtBtnGravar: {
         fontSize: 19.76,
@@ -318,4 +371,69 @@ const styles = StyleSheet.create({
         fontSize: 27,
         color: '#000'
     },
+    activeIndicator: {
+      height: '40%',
+      paddingTop: '10%'
+    },
+    scrollContainer: {
+        paddingHorizontal: '3%',
+        width: '100%',
+        //height: 70
+    },
+    itemContainer: {
+        flex: 1,
+        borderColor: '#CCCCCC',
+        borderWidth: 2
+    },
+    itemTouchable: {
+        flexDirection: 'row',
+        paddingVertical: '3%'
+    },
+    textContainer: {
+        flex: 3,
+        marginLeft: '7%'
+    },
+    itemTitle: {
+        fontSize: 20.9,
+        lineHeight: 25.47,
+        fontWeight: '900',
+        color: '#352727'
+    },
+    itemSubtext: {
+        fontSize: 13.46,
+        lineHeight: 16.4,
+        fontWeight: '400',
+        color: '#6F5F5F'
+    },
+    itemButtons: {
+        flexDirection: 'row',
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40
+    },
+    deleteButton: {
+        backgroundColor: '#A60A0A',
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40
+    },
+    editButton: {
+        backgroundColor: '#F2BB13',
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40
+    },
+    textButton: {
+        color: '#fff',
+        fontSize: 20.58,
+        fontWeight: '600'
+    },
+    selectionBoxContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1 
+    }
 })
