@@ -10,15 +10,21 @@ function Home({ navigation }) {
 
     useEffect(() => {
         getDocs(collection(db, "Usuarios")).then((snapShot) => {
+            let currUserID =''
             const newUser = snapShot.docs.filter((doc) => {
-                return doc.data().uid == auth.currentUser.uid
+                if(doc.data().uid == auth.currentUser.uid){
+                    currUserID = doc._document.key.path.segments.pop()
+                    return true
+                }
+                return false
             })
             //console.log("Resultado Login: ", newUser[0]._document.data)
             setUserAuth({
                 nome: newUser[0]._document.data.value.mapValue.fields.nome.stringValue,
                 email: newUser[0]._document.data.value.mapValue.fields.email.stringValue,
                 tipo: newUser[0]._document.data.value.mapValue.fields.tipo.stringValue,
-                uid: newUser[0]._document.data.value.mapValue.fields.uid.stringValue
+                uid: newUser[0]._document.data.value.mapValue.fields.uid.stringValue,
+                id: currUserID
             })
         })
         

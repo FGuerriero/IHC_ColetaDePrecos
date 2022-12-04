@@ -1,162 +1,229 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Alert, Pressable } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../config/firebase.js";
 
 import Header from '../Header/Header';
+import {AuthContext} from '../../Context/context'
 
-const checkListItems = [
-    {
-        id: 1,
-        itemCategory: 'Maionese',
-        itemBrand: 'My Oh Nese!',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: 5.6,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-    },{
-        id: 2,
-        itemCategory: 'Feijão',
-        itemBrand: 'Camil',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: null,
-        collected: false,
-        itemBarCode: null,
-        url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-    },{
-        id: 3,
-        itemCategory: 'Arroz',
-        itemBrand: 'Prato Fino',
-        storeName: 'Carrefour Anhanguera',
-        itemPrice: 12.99,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-    },{
-        id: 4,
-        itemCategory: 'Macarrão',
-        itemBrand: 'Renata',
-        storeName: 'Extra Lapa',
-        itemPrice: 2.50,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-    },{
-        id: 1,
-        itemCategory: 'Maionese',
-        itemBrand: 'My Oh Nese!',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: 5.6,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-    },{
-        id: 2,
-        itemCategory: 'Feijão',
-        itemBrand: 'Camil',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: null,
-        collected: false,
-        itemBarCode: null,
-        url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-    },{
-        id: 3,
-        itemCategory: 'Arroz',
-        itemBrand: 'Prato Fino',
-        storeName: 'Carrefour Anhanguera',
-        itemPrice: 12.99,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-    },{
-        id: 4,
-        itemCategory: 'Macarrão',
-        itemBrand: 'Renata',
-        storeName: 'Extra Lapa',
-        itemPrice: 2.50,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-    },{
-        id: 1,
-        itemCategory: 'Maionese',
-        itemBrand: 'My Oh Nese!',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: 5.6,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-    },{
-        id: 2,
-        itemCategory: 'Feijão',
-        itemBrand: 'Camil',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: null,
-        collected: false,
-        itemBarCode: null,
-        url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-    },{
-        id: 3,
-        itemCategory: 'Arroz',
-        itemBrand: 'Prato Fino',
-        storeName: 'Carrefour Anhanguera',
-        itemPrice: 12.99,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-    },{
-        id: 4,
-        itemCategory: 'Macarrão',
-        itemBrand: 'Renata',
-        storeName: 'Extra Lapa',
-        itemPrice: 2.50,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-    },{
-        id: 1,
-        itemCategory: 'Maionese',
-        itemBrand: 'My Oh Nese!',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: 5.6,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-    },{
-        id: 2,
-        itemCategory: 'Feijão',
-        itemBrand: 'Camil',
-        storeName: 'Carrefour Pirituba',
-        itemPrice: null,
-        collected: false,
-        itemBarCode: null,
-        url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-    },{
-        id: 3,
-        itemCategory: 'Arroz',
-        itemBrand: 'Prato Fino',
-        storeName: 'Carrefour Anhanguera',
-        itemPrice: 12.99,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-    },{
-        id: 4,
-        itemCategory: 'Macarrão',
-        itemBrand: 'Renata',
-        storeName: 'Extra Lapa',
-        itemPrice: 2.50,
-        collected: true,
-        itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-        url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-    },
-]
+// const checkListItems = [
+//     {
+//         id: 1,
+//         itemCategory: 'Maionese',
+//         itemBrand: 'My Oh Nese!',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: 5.6,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
+//     },{
+//         id: 2,
+//         itemCategory: 'Feijão',
+//         itemBrand: 'Camil',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: null,
+//         collected: false,
+//         itemBarCode: null,
+//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
+//     },{
+//         id: 3,
+//         itemCategory: 'Arroz',
+//         itemBrand: 'Prato Fino',
+//         storeName: 'Carrefour Anhanguera',
+//         itemPrice: 12.99,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
+//     },{
+//         id: 4,
+//         itemCategory: 'Macarrão',
+//         itemBrand: 'Renata',
+//         storeName: 'Extra Lapa',
+//         itemPrice: 2.50,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
+//     },{
+//         id: 1,
+//         itemCategory: 'Maionese',
+//         itemBrand: 'My Oh Nese!',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: 5.6,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
+//     },{
+//         id: 2,
+//         itemCategory: 'Feijão',
+//         itemBrand: 'Camil',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: null,
+//         collected: false,
+//         itemBarCode: null,
+//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
+//     },{
+//         id: 3,
+//         itemCategory: 'Arroz',
+//         itemBrand: 'Prato Fino',
+//         storeName: 'Carrefour Anhanguera',
+//         itemPrice: 12.99,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
+//     },{
+//         id: 4,
+//         itemCategory: 'Macarrão',
+//         itemBrand: 'Renata',
+//         storeName: 'Extra Lapa',
+//         itemPrice: 2.50,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
+//     },{
+//         id: 1,
+//         itemCategory: 'Maionese',
+//         itemBrand: 'My Oh Nese!',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: 5.6,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
+//     },{
+//         id: 2,
+//         itemCategory: 'Feijão',
+//         itemBrand: 'Camil',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: null,
+//         collected: false,
+//         itemBarCode: null,
+//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
+//     },{
+//         id: 3,
+//         itemCategory: 'Arroz',
+//         itemBrand: 'Prato Fino',
+//         storeName: 'Carrefour Anhanguera',
+//         itemPrice: 12.99,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
+//     },{
+//         id: 4,
+//         itemCategory: 'Macarrão',
+//         itemBrand: 'Renata',
+//         storeName: 'Extra Lapa',
+//         itemPrice: 2.50,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
+//     },{
+//         id: 1,
+//         itemCategory: 'Maionese',
+//         itemBrand: 'My Oh Nese!',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: 5.6,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
+//     },{
+//         id: 2,
+//         itemCategory: 'Feijão',
+//         itemBrand: 'Camil',
+//         storeName: 'Carrefour Pirituba',
+//         itemPrice: null,
+//         collected: false,
+//         itemBarCode: null,
+//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
+//     },{
+//         id: 3,
+//         itemCategory: 'Arroz',
+//         itemBrand: 'Prato Fino',
+//         storeName: 'Carrefour Anhanguera',
+//         itemPrice: 12.99,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
+//     },{
+//         id: 4,
+//         itemCategory: 'Macarrão',
+//         itemBrand: 'Renata',
+//         storeName: 'Extra Lapa',
+//         itemPrice: 2.50,
+//         collected: true,
+//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
+//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
+//     },
+// ]
 
 function CheckList({navigation}) {
+    const [checkListItems, setCheckListItems] = useState([])
     const [listItems, setListItems] = useState(checkListItems)
     const [currentIndex, setCurrentIndex] = useState(null)
     const [clearModalVisible, setClearModalVisible] = useState(false)
+    const { userAuth } = useContext(AuthContext)
+    const [fetchingLists, setFetchingLists] = useState(true)
+
+    function SortArrayObj(a, b) {
+        const nameA = a.nomeLoja.toUpperCase(); // ignore upper and lowercase
+        const nameB = b.nomeLoja.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+      
+        // names must be equal
+        return 0;
+    }
+
+    useEffect(() => {
+        //console.log("Auth: ", userAuth)
+        getDocs(collection(db, "ColetasListas")).then( async (snapShot) => {
+            let listasColl = snapShot.docs.map((doc,index) => {
+                return {...doc.data(), id: doc._document.key.path.segments.pop()}
+            })
+
+            listasColl = listasColl.filter(list => {
+                //console.log("Coletor: ", list.data === new Date().toISOString().split('T')[0])
+                return ((list.coletorID === userAuth.id) && (list.data === new Date().toISOString().split('T')[0]))
+            })
+            
+            listasColl.sort( SortArrayObj )
+            //setChecklistsAll(listasColl)
+            // setListItems(listasColl)
+            listasColl = listasColl.reduce((acc, curr, index) => {
+                if(index === 1){
+                    // console.log("ACC: ", acc.list.map(itemList => {
+                    //     return { ...itemList, listID: acc.id }
+                    // }))
+                    let listHandlerAcc = acc.list.map(LI => {
+                        return { ...LI,  listID: acc.id, nomeLoja: acc.nomeLoja}
+                    });
+                    let listHandlerCurr = curr.list.map(LI => {
+                        return { ...LI,  listID: curr.id, nomeLoja: curr.nomeLoja}
+                    });
+                    //console.log("Actual: ", ...listHandlerAcc)
+                    return [...listHandlerAcc, ...listHandlerCurr]
+                }else{
+                    let listHandlerCurr = curr.list.map(LI => {
+                        return { ...LI,  listID: curr.id, nomeLoja: curr.nomeLoja}
+                    });
+                    return [...acc, ...listHandlerCurr]
+                }
+            //     // console.log("acc: ", acc)
+            //     // console.log("Curr: ", curr)
+                //return 0
+            })
+            // console.log("Lista Final: ", listasColl)
+            setCheckListItems(listasColl)
+            setListItems(listasColl)
+
+        }).catch(err => {
+            Alert.alert("Falha ao tentar buscar Listas.", "Contacte Administrador")
+        })
+        setFetchingLists(false)
+    },[])
     
     return (
         <View style={styles.container}>
@@ -242,7 +309,7 @@ function CheckList({navigation}) {
                                     }}>
                                     <View style={styles.checkBoxContainer}>
                                         {
-                                            item.collected?
+                                            item.coletado?
                                             <Image 
                                                 source={require('../../../assets/checkedBox.png')} 
                                             /> :
@@ -253,24 +320,24 @@ function CheckList({navigation}) {
                                     </View>
                                     <View style={styles.textContainer}>
                                         <Text style={[styles.itemTitle,]}>
-                                            {item.itemCategory}
+                                            {item.nome}
                                         </Text>
                                         <Text style={styles.itemSubtext}>
-                                            {item.itemBrand}
+                                            {item.marca}
                                         </Text>
                                         <Text style={styles.itemSubtext}>
-                                            {item.storeName}
+                                            {item.nomeLoja}
                                         </Text>
                                     </View>
                                     <View style={styles.priceContainer}>
                                         <Text style={styles.itemPrice}>
-                                            R$ {item.itemPrice ? item.itemPrice.toFixed(2).replace('.',',') : '--'}
+                                            R$ {item.preço ? item.preço.toFixed(2).replace('.',',') : '--'}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
                                 {
                                     index === currentIndex ?
-                                        item.collected ?
+                                        item.coletado ?
                                             <View style={styles.itemButtons}>
                                                 <TouchableOpacity style={styles.clearButton} onPress={() => setClearModalVisible(!clearModalVisible)}>
                                                     <Text style={styles.textButton}>Limpar</Text>

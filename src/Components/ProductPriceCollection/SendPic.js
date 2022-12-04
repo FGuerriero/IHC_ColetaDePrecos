@@ -7,8 +7,12 @@ import { AntDesign } from '@expo/vector-icons';
 import CurrencyInput from 'react-native-currency-input';
 import ScanBarCode from './ScanningBarCode';
 import Header from '../Header/Header';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../config/firebase.js";
 
 export default function SendPic({ route, navigation }) {
+    const [PRODUCTS, setPRODUCTS] = useState([])
+    const [BRANDS, setBRANDS] = useState([])
     const [startCamera, setStartCamera] = useState(false)
     const [startScannCodeBar, setStartScannCodeBar] = useState(false)
     const [photo, setPhoto] = useState(null)
@@ -20,6 +24,7 @@ export default function SendPic({ route, navigation }) {
     const [loading, setLoading] = useState(false)
     const [value, setValue] = useState(0)
     const [barCode, setBarCode] = useState("Código do Produto")
+    const [productIndex, setProductIndex] = useState(0)
 
     const __startCamera = async () =>{
         const {status} = await Camera.requestCameraPermissionsAsync()
@@ -37,6 +42,62 @@ export default function SendPic({ route, navigation }) {
 
     //Reload Hook
     useEffect( () => {
+        getDocs(collection(db, "Marcas")).then( async (snapShot) => {
+            const brandsUpdated = snapShot.docs.map((doc) => {
+                return doc.data().nome
+            })
+            brandsUpdated.sort((a,b) => {
+                const nameA = a.toUpperCase(); // ignore upper and lowercase
+                const nameB = b.toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                return -1;
+                }
+                if (nameA > nameB) {
+                return 1;
+                }
+            
+                // names must be equal
+                return 0;
+            })
+            //console.log("Brands: ", brandsUpdated)
+            setBRANDS(brandsUpdated)
+            return
+        })
+        getDocs(collection(db, "Produtos")).then( async (snapShot) => {
+            const produtosUpdated = snapShot.docs.map((doc, index) => {
+                let docId = doc._document.key.path.segments.pop()
+                if(route.params && (docId == route.params.id)){
+                    return {...doc.data(), id: docId , currProduct: true}
+                }
+                return {...doc.data(), id: docId }
+            })
+            produtosUpdated.sort((a,b) => {
+                const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+                const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                return -1;
+                }
+                if (nameA > nameB) {
+                return 1;
+                }
+            
+                // names must be equal
+                return 0;
+            })
+            produtosUpdated.forEach((usr,index) => {
+                if(usr.currProduct){
+                    setProductIndex(index+1)
+                }
+            });
+            //console.log("Brands: ", produtosUpdated)
+            setPRODUCTS(produtosUpdated)
+            return
+        }).catch( (error) => {
+            Alert.alert("Erro ao tentar trazer Produtos")
+            console.log("ERRO USUÁRIO!!", error)
+        })
+        
+        console.log("Current Item: ", route.params)
         const updateLocate = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted' && photo === null) {
@@ -78,7 +139,7 @@ export default function SendPic({ route, navigation }) {
         }else if(value < 0.01){
             Alert.alert('Preço inválido! \nDigite um valor maior que R$0,01')
             return
-        }else if(marca === 'notSelected'){
+        }else if(productIndex === 0){
             Alert.alert('Digite a Marca do produto antes de enviar Coleta!')
             return
         }
@@ -103,87 +164,107 @@ export default function SendPic({ route, navigation }) {
                             <AntDesign name="leftcircle" size={40} color='#80808070' />
                         </TouchableOpacity>
                     </View>
-                    <View style={styles.body}>
-                        <ImageBackground style={styles.miniImg} source={require('../../../assets/camera.png')} imageStyle={{resizeMode: 'contain'}}>
-                            {photo ? <Image source={{uri: photo.uri}} style={styles.photo} resizeMode='center'/> : <View/>}
-                        </ImageBackground>
-                        <TouchableOpacity style={styles.takePicButton} onPress={__startCamera}>
-                            <Text style={styles.textPicButton}>{!!photo ? "Tirar Foto Novamente" : "Tirar Foto"}</Text>
-                        </TouchableOpacity>
-                        
-                        <View style={styles.barCodeContainer}>
-                            <Text style={styles.txtBarCode}>{barCode}</Text>
-                            <TouchableOpacity 
-                                style={styles.btnScannBarCode}
-                                onPress={() => setStartScannCodeBar(true)}
+                    <KeyboardAwareScrollView style={styles.scrollContainer}>
+                        <View style={styles.body}>
+                            <ImageBackground style={styles.miniImg} source={require('../../../assets/camera.png')} imageStyle={{resizeMode: 'contain'}}>
+                                {photo ? <Image source={{uri: photo.uri}} style={styles.photo} resizeMode='center'/> : <View/>}
+                            </ImageBackground>
+                            <TouchableOpacity style={styles.takePicButton} onPress={__startCamera}>
+                                <Text style={styles.textPicButton}>{!!photo ? "Tirar Foto Novamente" : "Tirar Foto"}</Text>
+                            </TouchableOpacity>
+                            
+                            <View style={styles.barCodeContainer}>
+                                <Text style={styles.txtBarCode}>{barCode}</Text>
+                                <TouchableOpacity 
+                                    style={styles.btnScannBarCode}
+                                    onPress={() => setStartScannCodeBar(true)}
+                                >
+                                    <Text style={styles.textPicButton}>Escanear</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <Picker
+                                selectedValue={productIndex}
+                                onValueChange={newValue => setProductIndex(newValue)}
+                                style={styles.picker}
                             >
-                                <Text style={styles.textPicButton}>Escanear</Text>
+                                <Picker.Item label='Selecione Produto' value={0} key={0} style={styles.pickerItemGrey}/>
+                                {
+                                    PRODUCTS.map((item, index) => {
+                                        //console.log("Picker: ", item)
+                                        return (
+                                            <Picker.Item label={item.nome} value={index+1} key={index+1} style={styles.pickerItemBlack} />
+                                        )
+                                    })
+                                }
+                            </Picker>
+
+                            <Picker
+                                style={styles.picker}
+                                selectedValue={loja}
+                                onValueChange={newValue => setLoja(newValue)}
+                            >
+                                <Picker.Item label='Selecione Loja' value='notSelected' key={0} />
+                                <Picker.Item label='Extra Pirituba' value='extraPirituba' key={1}/>
+                                <Picker.Item label='Açai Freguesia do Ó' value='acaiFreguesiaDoO' key={2}/>
+                                <Picker.Item label='Dia Mutinga' value='diaMutinga' key={3}/>
+                                <Picker.Item label='Pão de Açucar Vila Mariana' value='paoDeAcucarVilaMAriana' key={4}/>
+                                <Picker.Item label='Carrefour Colônia Alemã' value='carrefourColoniaAlema' key={5}/>
+                                <Picker.Item label='Carrefour Pirituba' value='Carrefour Pirituba' key={6}/>
+                                <Picker.Item label='Carrefour Anhanguera' value='Carrefour Anhanguera' key={7}/>
+                                <Picker.Item label='Extra Lapa' value='Extra Lapa' key={8}/>
+                            </Picker>
+
+                            <View style={styles.textFieldContainer}>
+                                <Picker
+                                    selectedValue={marca}
+                                    onValueChange={newValue => setMarca(newValue)}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item label='Selecione Marca' value={null} key={0} style={styles.pickerItemGrey}/>
+                                    {
+                                        BRANDS.map((item, index) => {
+                                            return (
+                                                <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+                                            )
+                                        })
+                                    }
+                                </Picker>
+                                <Text style={styles.label}> Preço: </Text>
+                                <CurrencyInput
+                                    style={styles.preco}
+                                    value={value}
+                                    onChangeValue={setValue}
+                                    prefix="R$"
+                                    delimiter="."
+                                    separator=","
+                                    precision={2}
+                                />
+                                <Text style={styles.label}> Confirmar Preço: </Text>
+                                <CurrencyInput
+                                    style={styles.preco}
+                                    value={value}
+                                    onChangeValue={setValue}
+                                    prefix="R$"
+                                    delimiter="."
+                                    separator=","
+                                    precision={2}
+                                />
+                            </View>
+                        </View>
+
+                        {
+                            loading?
+                            <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>:
+                            <View/>
+                        }
+
+                        <View style={styles.footer}>
+                            <TouchableOpacity style={styles.submitBtn} onPress={ sendInformation }>
+                                <Text style={styles.btnText}>GRAVAR</Text>
                             </TouchableOpacity>
                         </View>
-
-                        <Picker
-                            style={styles.picker}
-                            selectedValue={produto}
-                            onValueChange={newValue => setProduto(newValue)}
-                        >
-                            <Picker.Item label='Selecione Produto' value='notSelected' key={0}/>
-                            <Picker.Item label='Pão Francês' value='paoFrances' key={1}/>
-                            <Picker.Item label='Arroz' value='Arroz' key={2}/>
-                            <Picker.Item label='Feijão' value='Feijão' key={3}/>
-                            <Picker.Item label='Linguiça Calabreza' value='linguicaCalabreza' key={4}/>
-                            <Picker.Item label='Leite' value='leite' key={5}/>
-                            <Picker.Item label='Macarrão' value='Macarrão' key={6}/>
-                            <Picker.Item label='Maionese' value='Maionese' key={7}/>
-                        </Picker>
-
-                        <Picker
-                            style={styles.picker}
-                            selectedValue={loja}
-                            onValueChange={newValue => setLoja(newValue)}
-                        >
-                            <Picker.Item label='Selecione Loja' value='notSelected' key={0}/>
-                            <Picker.Item label='Extra Pirituba' value='extraPirituba' key={1}/>
-                            <Picker.Item label='Açai Freguesia do Ó' value='acaiFreguesiaDoO' key={2}/>
-                            <Picker.Item label='Dia Mutinga' value='diaMutinga' key={3}/>
-                            <Picker.Item label='Pão de Açucar Vila Mariana' value='paoDeAcucarVilaMAriana' key={4}/>
-                            <Picker.Item label='Carrefour Colônia Alemã' value='carrefourColoniaAlema' key={5}/>
-                            <Picker.Item label='Carrefour Pirituba' value='Carrefour Pirituba' key={6}/>
-                            <Picker.Item label='Carrefour Anhanguera' value='Carrefour Anhanguera' key={7}/>
-                            <Picker.Item label='Extra Lapa' value='Extra Lapa' key={8}/>
-                        </Picker>
-
-                        <View style={styles.textFieldContainer}>
-                            <Text style={styles.label}> Marca: </Text>
-                            <TextInput 
-                                style={styles.inputMarca}
-                                placeholder={'Digite a marca do produto'}
-                                onChangeText={inputMarca => setMarca(inputMarca)}
-                                value={marca==='notSelected'? undefined : marca}
-                            />
-                            <Text style={styles.label}> Preço: </Text>
-                            <CurrencyInput
-                                style={styles.preco}
-                                value={value}
-                                onChangeValue={setValue}
-                                prefix="R$"
-                                delimiter="."
-                                separator=","
-                                precision={2}
-                            />
-                        </View>
-                    </View>
-
-                    {
-                        loading?
-                        <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>:
-                        <View/>
-                    }
-
-                    <View style={styles.footer}>
-                        <TouchableOpacity style={styles.submitBtn} onPress={ sendInformation }>
-                            <Text style={styles.btnText}>GRAVAR</Text>
-                        </TouchableOpacity>
-                    </View>
+                    </KeyboardAwareScrollView>
                 </View>
             )}
         </SafeAreaView>
@@ -200,16 +281,20 @@ const styles = StyleSheet.create({
         flex: 1
     },
     header: {
-        flex: .08,
+        height: 50,
         justifyContent: 'space-between',
         marginTop: '4%',
         // borderWidth: 1,
         // borderColor: '#000'
     },
+    scrollContainer: {
+        flex: .92,
+    },
     body: {
         flex: .8,
         justifyContent: 'flex-start',
-        marginHorizontal: '5%'
+        marginHorizontal: '5%',
+        marginBottom: '5%'
     },
     footer: {
         height: 40,
@@ -223,7 +308,7 @@ const styles = StyleSheet.create({
         marginBottom: 5
     },
     miniImg: {
-        flex: .5,
+        height: 200,
         backgroundColor: '#80808047',
         width: 140,
         alignSelf: 'center',
@@ -311,7 +396,8 @@ const styles = StyleSheet.create({
         height: '20%',
         paddingLeft: 10,
         borderRadius: 8,
-        borderColor: '#BFBFBF'
+        borderColor: '#BFBFBF',
+        marginBottom: '5%'
     },
     inputMarca: {
         borderWidth: 1,
@@ -327,9 +413,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     textFieldContainer: {
-        flex: .4,
-        backgroundColor: '#fffb',
-        marginVertical: 5,
+        height: '30%',
+        //backgroundColor: '#fffb',
+        marginBotton: '10%',
         padding: 5
     },
     barCodeContainer: {
@@ -339,6 +425,7 @@ const styles = StyleSheet.create({
         // borderWidth: 5,
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginTop: '5%'
     },
     btnScannBarCode: {
         justifyContent: 'center',
@@ -354,5 +441,9 @@ const styles = StyleSheet.create({
     txtBarCode: {
         paddingLeft: 10,
         fontSize: 16
+    },
+    pickerItemGrey: {
+        fontSize: 20,
+        color: '#868686'
     }
 })
