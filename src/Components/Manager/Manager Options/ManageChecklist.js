@@ -14,59 +14,65 @@ import Header from '../../Header/Header';
 
 function ManageChecklists({route, navigation}) {
     const [checklistsAll, setChecklistsAll] = useState([
-        {
-            id: 'asdsd',
-            lojaNome: 'Extra Pirituba',
-            lojaId: '',
-            dataColeta: '22/12/2022',
-            status: 'Concluida'
-        },{
-            id: 'asdsd',
-            lojaNome: 'Carrefour Pirituba',
-            lojaId: '',
-            dataColeta: '03/01/2023',
-            status: 'Pendente'
-        }
+        // {
+        //     id: 'asdsd',
+        //     nomeLoja: 'Extra Pirituba',
+        //     lojaId: '',
+        //     data: '22/12/2022',
+        //     status: 'Concluida'
+        // },{
+        //     id: 'asdsd',
+        //     nomeLoja: 'Carrefour Pirituba',
+        //     lojaId: '',
+        //     data: '03/01/2023',
+        //     status: 'Pendente'
+        // }
     ])
     const [listItems, setListItems] = useState(checklistsAll)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [searchText, setSearchText] = useState('')
+    const [fetchingLists, setFetchingLists] = useState(true)
 
-    // const updateUsers = () => {
-    //     getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
-    //         const usersColl = snapShot.docs.map((doc,index) => {
-    //             //index === 0 ?console.log("ID"+index+": ", doc._document.key.path) : undefined
-    //             return {...doc.data(), id: doc._document.key.path.segments.pop()}
-    //         })
-    //         //console.log("Users: ", usersColl)
+    const updateLists = () => {
+        getDocs(collection(db, "ColetasListas")).then( async (snapShot) => {
+            let listasColl = snapShot.docs.map((doc,index) => {
+                //index === 0 ?console.log("ID"+index+": ", doc._document.key.path) : undefined
+                return {...doc.data(), id: doc._document.key.path.segments.pop()}
+            })
+            //console.log("User: ", route.params.id)
+            listasColl = listasColl.filter(list => {
+                //console.log("Coletor: ", list.coletorID === route.params.id)
+                return (list.coletorID === route.params.id)
+            })
             
-    //         usersColl.sort( SortArrayObj )
-    //         setSearchText('')
-    //         setChecklistsAll(usersColl)
-    //         setListItems(usersColl)
+            listasColl.sort( SortArrayObj )
+            setChecklistsAll(listasColl)
+            setListItems(listasColl)
 
-    //     })
-    //     return
-    // }
+        }).catch(err => {
+            Alert.alert("Falha ao tentar buscar Listas.", "Contacte Administrador")
+        })
+        setFetchingLists(false)
+        return
+    }
 
-    // const deleteUser = () => {
-    //     setLoading(true)
-    //     deleteDoc(doc(db,"Usuarios",listItems[currentIndex].id)).then((resp) => {
-    //         console.log("Deleted: ", resp)
-    //         Alert.alert("Usuário excluido com sucesso!")
-    //         //updateUsers()
-    //         setDeleteModalVisible(!deleteModalVisible)
-    //         setLoading(false)
-    //     }).catch((error) => {
-    //         Alert.alert("Erro o tentar deletar Usuário!\n",error)
-    //     })
-    // }
+    const deleteList = () => {
+        setLoading(true)
+        deleteDoc(doc(db,"ColetasListas",listItems[currentIndex].id)).then((resp) => {
+            console.log("Deleted: ", resp)
+            Alert.alert("Lista excluida com sucesso!")
+            updateLists()
+            setDeleteModalVisible(!deleteModalVisible)
+            setLoading(false)
+        }).catch((error) => {
+            Alert.alert("Erro o tentar deletar Usuário!\n",error)
+        })
+    }
 
     function SortArrayObj(a, b) {
-        const nameA = a.lojaNome.toUpperCase(); // ignore upper and lowercase
-        const nameB = b.lojaNome.toUpperCase(); // ignore upper and lowercase
+        const nameA = a.nomeLoja.toUpperCase(); // ignore upper and lowercase
+        const nameB = b.nomeLoja.toUpperCase(); // ignore upper and lowercase
         if (nameA < nameB) {
           return -1;
         }
@@ -80,14 +86,14 @@ function ManageChecklists({route, navigation}) {
 
     useEffect(() => {
         //console.log("UseEffect")
-        //updateUsers()
+        updateLists()
         //------------------- Date to String -----------------------------
         // let date = new Date()
         // console.log("Date: ", typeof date.toISOString().split('T')[0])
 
-        DeviceEventEmitter.addListener("event.userUpdated", () => {
-            console.log("Edited User")
-            //updateUsers()
+        DeviceEventEmitter.addListener("event.listUpdated", () => {
+            console.log("Edited List")
+            updateLists()
         });
     },[])
 
@@ -104,14 +110,14 @@ function ManageChecklists({route, navigation}) {
             >
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Deseja realmente deletar o Usuário?:</Text>
-                        <Text style={styles.modalStoreText}>{listItems[currentIndex] ? listItems[currentIndex].lojaNome : undefined}, {listItems[currentIndex] ? listItems[currentIndex].tipo : undefined} </Text>
+                        <Text style={styles.modalText}>Deseja realmente deletar esta Lista?:</Text>
+                        <Text style={styles.modalStoreText}>{listItems[currentIndex] ? listItems[currentIndex].nomeLoja : undefined}, {listItems[currentIndex] ? listItems[currentIndex].data : undefined} </Text>
                         <View style={styles.modalButtonsContainer}>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
                                 onPress={() => {
                                     // --------------- Handle Request to BackEnd
-                                    deleteUser()
+                                    deleteList()
                                 }}
                                 >
                                 {loading?
@@ -139,11 +145,11 @@ function ManageChecklists({route, navigation}) {
                     <Text style={styles.userNameText}>{route.params.nome}</Text>
                 </View>
             </View>
-            <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('ChecklistCRUD')}>
+            <TouchableOpacity style={styles.btnNovoProduto} onPress={ () => navigation.push('ChecklistCRUD',{coletorID: route.params.id})}>
                 <Text style={styles.txtNovoProduto}>NOVA LISTA</Text>
             </TouchableOpacity>
             {
-                checklistsAll[0].id == "" ?
+                fetchingLists?
                     <View style={styles.activeIndicator}>
                         <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
                     </View>
@@ -175,7 +181,7 @@ function ManageChecklists({route, navigation}) {
                                             }}>
                                             <View style={styles.checkBoxContainer}>
                                                 {
-                                                    item.status == 'Concluida'?
+                                                    item.concluida == true?
                                                     <Image 
                                                         source={require('../../../../assets/checkedBox.png')} 
                                                     /> :
@@ -186,10 +192,10 @@ function ManageChecklists({route, navigation}) {
                                             </View>
                                             <View style={styles.textContainer}>
                                                 <Text style={[styles.itemTitle,]}>
-                                                    {item.lojaNome}
+                                                    {item.nomeLoja}
                                                 </Text>
                                                 <Text style={styles.itemSubtext}>
-                                                    {item.dataColeta}
+                                                    {`${item.data.substring(8,10)+'/'+item.data.substring(5,7)+'/'+item.data.substring(0,4)}`}
                                                 </Text>
                                             </View>
                                         </TouchableOpacity>
@@ -200,8 +206,8 @@ function ManageChecklists({route, navigation}) {
                                                             <Text style={styles.textButton}>Deletar</Text>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity style={styles.editButton} onPress={() => {
-                                                            console.log("Editando: ", item)
-                                                            navigation.push('UsersCRUD', item)
+                                                            //console.log("Editando: ", item)
+                                                            navigation.push('ChecklistCRUD', item)
                                                         }}>
                                                             <Text style={styles.textButton}>Editar</Text>
                                                         </TouchableOpacity>

@@ -186,7 +186,7 @@ function DevicesCRUD({route, navigation}) {
                             <Picker.Item label='Selecione Responsável' value={0} key={0} style={styles.pickerItemGrey}/>
                             {
                                 USERS.map((item, index) => {
-                                    console.log("Picker: ", item)
+                                    //console.log("Picker: ", item)
                                     return (
                                         <Picker.Item label={item.nome} value={index+1} key={index+1} style={styles.pickerItemBlack} />
                                     )

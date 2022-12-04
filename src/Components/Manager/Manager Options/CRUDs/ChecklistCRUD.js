@@ -2,15 +2,15 @@ import React, {useEffect, useState} from 'react';
 import { Text, StyleSheet, View, TextInput, Modal, TouchableOpacity, ActivityIndicator, DeviceEventEmitter, Alert, ScrollView, Image } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker'
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Header from '../../../Header/Header';
 import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../../../config/firebase.js";
 import { cadastrar } from '../../../../servicos/requisicoesFirebase';
 
 import {createUserWithEmailAndPassword} from "firebase/auth";
 
-const accessLvls = ['Administrador', 'Supervisor', 'Coletor']
-
 function ChecklistCRUD({route, navigation}) {
+    const [STORES,setSTORES] = useState([])
     const [productsAll, setProductsAll] = useState([
         {
             nome: 'Leite',
@@ -45,46 +45,113 @@ function ChecklistCRUD({route, navigation}) {
         },
     ])
     const [productsOnList, setProductsOnList] = useState([
-        {
-            nome: 'Leite',
-            marca: 'Parmalate',
-            descricao: '',
-            id: 'abcd'
-        },{
-            nome: 'Leite',
-            marca: 'Parmalate',
-            descricao: '',
-            id: 'abcdf'
-        },{
-            nome: 'Leite',
-            marca: 'Parmalate',
-            descricao: '',
-            id: 'abcdh'
-        },{
-            nome: 'Arroz',
-            marca: 'Prato Fino',
-            descricao: '',
-            id: 'abcdi'
-        },
+        // ,{
+        //     nome: 'Leite',
+        //     marca: 'Parmalate',
+        //     descricao: '',
+        //     id: 'abcdf'
+        // },{
+        //     nome: 'Leite',
+        //     marca: 'Parmalate',
+        //     descricao: '',
+        //     id: 'abcdh'
+        // },{
+        //     nome: 'Arroz',
+        //     marca: 'Prato Fino',
+        //     descricao: '',
+        //     id: 'abcdi'
+        // },
     ])
     const [listItems, setListItems] = useState(productsAll)
-    const [currentIndex, setCurrentIndex] = useState(0)
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [type, setType] = useState(null)
-    const [tempPass, setTempPass] = useState('')
-    const [uid, setUid] = useState(null)
+    const [storeIndex, setStoreIndex] = useState(0)
+    const [date, setDate] = useState('')
+    const [pickerDatePresenting, setPickerDatePresenting] = useState('Selecione a Data')
+    const [pickerDateControl, setPickerDateControl] = useState(new Date())
+
+    const [datePicker, setDatePicker] = useState(false);
 
     const [loadVisible, setLoadVisible] = useState(false)
+    const [fetchingProducts, setfetchingProducts] = useState(true)
 
     useEffect(() => {
-        if(route.params){
-            setName(route.params.nome)
-            setEmail(route.params.email)
-            setType(route.params.tipo)
-            setUid(route.params.uid)
+        //-------------Buscar Lojas
+        console.log("Entrou no Use Effect")
+        getDocs(collection(db, "Lojas")).then( async (snapShot) => {
+            const lojasUpdated = snapShot.docs.map((doc, index) => {
+                let docId = doc._document.key.path.segments.pop()
+                if(route.params && (docId == route.params.lojaID)){
+                    return {...doc.data(), id: docId , currStore: true}
+                }
+                return {...doc.data(), id: docId }
+            })
+            lojasUpdated.sort((a,b) => {
+                const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+                const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                return -1;
+                }
+                if (nameA > nameB) {
+                return 1;
+                }
+            
+                // names must be equal
+                return 0;
+            })
+            lojasUpdated.forEach((store,index) => {
+                if(store.currStore){
+                    setStoreIndex(index+1)
+                }
+            });
+            //console.log("Brands: ", lojasUpdated)
+            setSTORES(lojasUpdated)
+            return
+        }).catch( (error) => {
+            Alert.alert("Erro ao tentar trazer Lojas")
+            console.log("ERRO LOJAS!!", error)
+        })
+
+        //-------Buscar Produtos
+        getDocs(collection(db, "Produtos")).then( async (snapShot) => {
+            const produtosUpdated = snapShot.docs.map((doc, index) => {
+                return {...doc.data(), id: doc._document.key.path.segments.pop() }
+            })
+            //console.log("Produtos: ", produtosUpdated)
+            produtosUpdated.sort((a,b) => {
+                const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+                const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                return -1;
+                }
+                if (nameA > nameB) {
+                return 1;
+                }
+            
+                // names must be equal
+                return 0;
+            })
+            //console.log("Brands: ", lojasUpdated)
+            setProductsAll(produtosUpdated)
+            setListItems(produtosUpdated)
+            setfetchingProducts(false)
+            return
+        }).catch( (error) => {
+            Alert.alert("Erro ao tentar trazer Produtos")
+            console.log("ERRO PRODUTOS!!", error)
+        })
+
+        if(Object.keys(route.params).indexOf('list') > -1){
+            setDate(route.params.data)
+            setPickerDatePresenting(`${route.params.data.substring(8,10)+'/'+route.params.data.substring(5,7)+'/'+route.params.data.substring(0,4)}`)
+            setPickerDateControl(new Date(route.params.data.substring(0,4),Number(route.params.data.substring(5,7))-1,route.params.data.substring(8,10)))
+            setProductsOnList(route.params.list)
+            setStoreIndex(STORES.filter( str => {
+                return str.id === route.params.lojaID
+            })[0])
+            // setName(route.params.nome)
+            // setEmail(route.params.email)
+            // setType(route.params.tipo)
+            // setUid(route.params.uid)
         }
-        console.log(("Teste: ", !!1))
     }, [])
 
     const setSelected = (itemID) => {
@@ -101,93 +168,86 @@ function ChecklistCRUD({route, navigation}) {
     }
 
     const pushPopListItems = (item) => {
-        let indicator = false
+        let indicator = 0
         productsOnList.forEach( (prod,index) => {
             if (Object.values(prod).indexOf(item.id) > -1) {
                 //console.log("Index: ",Object.values(prod).indexOf(itemID))
-                indicator = true
+                indicator = index+1
             }
         })
+        //console.log("Indicator: ", item)
         if(indicator){
-
+            setProductsOnList(productsOnList.filter( (prod,index) => {
+                return (index!=indicator-1)
+            }))
         }else{
-
+            setProductsOnList([...productsOnList, item])
         }
     }
-    const GravarDevice = async () => {
-        if (name == '') {
-            Alert.alert("Preencha Nome do Usuário")      
-        } else if (email == '') {
-            Alert.alert("Preencha email do Usuário")  
-        } else if (tempPass == '' && !route.params) {
-            Alert.alert("Preencha Senha Temporária do Usuário")  
-        } else if (type === null) {
-            Alert.alert("Selecione o Nível de acesso do Usuário!")
+    const GravarLista = async () => {
+        if (storeIndex == 0) {
+            Alert.alert("Selecione a Loja!")      
+        } else if (date == '') {
+            Alert.alert("Preencha data da Lista","Esta é a data que a coleta deve acontecer.")  
+        } else if (productsOnList.length == 0) {
+            Alert.alert("Selecione ao menos 1 item para esta Lista!")  
         } else {
             setLoadVisible(true)
-            await getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
-                const newUser = snapShot.docs.filter((doc) => {
-                    return doc.data().email == email
+            await getDocs(collection(db, "ColetasListas")).then( async (snapShot) => {
+                const newList = snapShot.docs.filter((doc,index) => {
+                    return ((doc.data().coletorID === route.params.coletorID) && (doc.data().data === date) && (doc.data().lojaID === STORES[storeIndex-1].id))
                 })
-                console.log("Current User: ", route.params)
-                if(route.params){
-                    if(newUser.length == 1){
-                        await updateDoc(doc(db,"Usuarios",route.params.id),{
-                            nome: name,
-                            email,
-                            tipo: type
-                        }).then((resp) => {
-                            console.log("Response: ", resp)
-                        })
-                        DeviceEventEmitter.emit("event.userUpdated")
-
-                        setEmail('');
-                        setTempPass('');
-                        setType(null);
-                        setUid('')
+                //console.log("Current User: ", route.params)
+                if(Object.keys(route.params).indexOf('list') > -1){
+                    //console.log("Chegou! ",route.params.id)
+                    await updateDoc(doc(db,"ColetasListas",route.params.id),{
+                        coletorID: route.params.coletorID,
+                        lojaID: STORES[storeIndex-1].id,
+                        nomeLoja: STORES[storeIndex-1].nome,
+                        data: date,
+                        list: productsOnList
+                    }).then((resp) => {
+                        console.log("Response: ", resp)
+    
+                        setStoreIndex(0);
+                        setDate('');
                         setLoadVisible(false)
-
+    
                         navigation.goBack()
-                    }else{
-                        Alert.alert("Já existe uma conta cadastrada com este email!")
+                    }).catch(err => {
+                        Alert.alert("Erro ao tentar alterar Lista!")
                         setLoadVisible(false)
-                    }
+                    })
+                    DeviceEventEmitter.emit("event.listUpdated")
                 }else{
-                    const resultado = await createUserWithEmailAndPassword(authManager, email, tempPass)
-                        .then((dadosDoUsuario) => {
-                            //console.log(dadosDoUsuario)
-                            return dadosDoUsuario
-                        })
-                        .catch((error) => {
-                            console.log(error);
-                            return error
-                        });
-                    if (resultado.user) {
-                        console.log("Cadastro realizado com sucesso!")
-                        const newUser = await addDoc(collection(db, "Usuarios"), {
-                            nome: name,
-                            email: email,
-                            tipo: type,
-                            uid: resultado.user.uid
+                    if(newList.length == 0){
+                        const newList = await addDoc(collection(db, "ColetasListas"), {
+                            coletorID: route.params.coletorID,
+                            lojaID: STORES[storeIndex-1].id,
+                            nomeLoja: STORES[storeIndex-1].nome,
+                            data: date,
+                            list: productsOnList
                         }).then( resp => {
-                            DeviceEventEmitter.emit("event.userUpdated")
-                            Alert.alert("Usuário cadastrado com sucesso!\nSenha do novo Usuário: "+tempPass)
+                            //console.log("Sucesso ao Criar Produto: ", resp)
+                            Alert.alert("Lista cadastrada com sucesso!")
                             navigation.goBack()
                             
-                            setEmail('');
-                            setTempPass('');
-                            setType(null);
-                            setUid('')
+                            setStoreIndex(0);
+                            setDate('');
                             setLoadVisible(false)
-                        }).catch(error => {
-                            console.log("Erro ao tentar criar usuário", error)
+                        }).catch( error => {
+                            console.log("Erro ao tentar criar Lista", error)
                         })
-                    }
-                    else {
-                        Alert.alert("Erro ao tentar cadastrar usuário.\nContate Administrador do Sistema!");
+                        DeviceEventEmitter.emit("event.listUpdated")
+                    }else{
+                        Alert.alert("Já existe uma Lista cadastrada para este coletor no mesmo dia e local!")
                         setLoadVisible(false)
                     }
                 }
+            }).catch(err => {
+                console.log("Error: ", err)
+                Alert.alert("Erro ao tentar gravar no Servidor.", "Tente novamente mais tarde!")
+                setLoadVisible(false)
             })
         }
         return
@@ -204,28 +264,41 @@ function ChecklistCRUD({route, navigation}) {
             <View style={styles.bodyContainer}>
                 <View style={styles.pickerContainer}>
                     <Picker
-                        selectedValue={type}
-                        onValueChange={newValue => setType(newValue)}
+                        selectedValue={storeIndex}
+                        onValueChange={newValue => setStoreIndex(newValue)}
                         style={styles.picker}
                     >
-                        <Picker.Item label='Loja' value={type} key={0} style={styles.pickerItemGrey}/>
+                        <Picker.Item label='Loja' value={0} key={0} style={styles.pickerItemGrey}/>
                         {
-                            accessLvls.map((item, index) => {
+                            STORES.map((item, index) => {
                                 return (
-                                    <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+                                    <Picker.Item label={item.nome} value={index+1} key={index+1} style={styles.pickerItemBlack} />
                                 )
                             })
                         }
                     </Picker>
                 </View>
-                <TextInput 
-                    style={styles.inputText} 
-                    placeholder={'Data: DD/MM/AAAA'}
-                    value={name}
-                    onChangeText={ text => setName(text)}
-                />
+                <TouchableOpacity style={styles.listDate} onPress={() => setDatePicker(true)}>
+                    <Text style={styles.listDateText}>{pickerDatePresenting}</Text>
+                </TouchableOpacity>
+                {datePicker && 
+                    <DateTimePicker
+                        value={pickerDateControl}
+                        mode={'date'}
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        is24Hour={true}
+                        minimumDate={new Date()}
+                        onChange={(event,value) => {
+                            setDatePicker(false)
+                            setPickerDatePresenting(`${value.getDate().toString().padStart(2, '0')}/${(value.getMonth()+1).toString().padStart(2,'0')}/${value.getFullYear()}`)
+                            setPickerDateControl(value)
+                            setDate(value.toISOString().split('T')[0])
+                        }}
+                        style={styles.datePicker}
+                    />
+                }
                 {
-                    productsAll[0].nome == "" ?
+                    fetchingProducts ?
                         <View style={styles.activeIndicator}>
                             <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
                         </View>
@@ -244,7 +317,7 @@ function ChecklistCRUD({route, navigation}) {
                                                         styles.itemContainer
                                         }>
                                             <TouchableOpacity style={styles.itemTouchable} onPress={() => {
-                                                    setCurrentIndex(index)  
+                                                    pushPopListItems(item)  
                                                 }}>
                                                 <View style={styles.textContainer}>
                                                     <Text style={[styles.itemTitle,]}>
@@ -274,7 +347,7 @@ function ChecklistCRUD({route, navigation}) {
                             }
                         </ScrollView>
                 }
-                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarDevice()}>
+                <TouchableOpacity style={styles.btnGravar} onPress={() => GravarLista()}>
                     <Text style={styles.txtBtnGravar}>
                     {
                         loadVisible ? 
@@ -313,7 +386,7 @@ const styles = StyleSheet.create({
         // borderWidth: 20,
         // borderColor: '#000'
     },
-    inputText: {
+    listDate: {
         //height: '100%',
         width: '100%',
         fontSize: 27,
@@ -342,7 +415,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         width:'100%',
         borderRadius: 9.5,
-        marginVertical: '10%'
+        marginVertical: '5%'
     },
     picker: {
         //fontSize: 30,
@@ -355,7 +428,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         //flex: 0.14,
         width: '100%',
-        marginVertical: '10%',
+        marginVertical: '8%',
     },
     txtBtnGravar: {
         fontSize: 19.76,
@@ -435,5 +508,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1 
+    },
+    datePicker: {
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        width: 320,
+        height: 260,
+        display: 'flex',
+    },
+    listDateText: {
+        fontSize: 25
     }
 })
