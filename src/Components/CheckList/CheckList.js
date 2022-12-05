@@ -158,7 +158,7 @@ import {AuthContext} from '../../Context/context'
 function CheckList({navigation}) {
     const [checkListItems, setCheckListItems] = useState([])
     const [listItems, setListItems] = useState(checkListItems)
-    const [currentIndex, setCurrentIndex] = useState(null)
+    const [currentIndex, setCurrentIndex] = useState(0)
     const [clearModalVisible, setClearModalVisible] = useState(false)
     const { userAuth } = useContext(AuthContext)
     const [fetchingLists, setFetchingLists] = useState(true)
@@ -190,37 +190,36 @@ function CheckList({navigation}) {
             })
             
             listasColl.sort( SortArrayObj )
-            //setChecklistsAll(listasColl)
-            // setListItems(listasColl)
-            listasColl = listasColl.reduce((acc, curr, index) => {
-                if(index === 1){
-                    // console.log("ACC: ", acc.list.map(itemList => {
-                    //     return { ...itemList, listID: acc.id }
-                    // }))
-                    let listHandlerAcc = acc.list.map(LI => {
-                        return { ...LI,  listID: acc.id, nomeLoja: acc.nomeLoja}
-                    });
-                    let listHandlerCurr = curr.list.map(LI => {
-                        return { ...LI,  listID: curr.id, nomeLoja: curr.nomeLoja}
-                    });
-                    //console.log("Actual: ", ...listHandlerAcc)
-                    return [...listHandlerAcc, ...listHandlerCurr]
-                }else{
-                    let listHandlerCurr = curr.list.map(LI => {
-                        return { ...LI,  listID: curr.id, nomeLoja: curr.nomeLoja}
-                    });
-                    return [...acc, ...listHandlerCurr]
-                }
-            //     // console.log("acc: ", acc)
-            //     // console.log("Curr: ", curr)
-                //return 0
-            })
-            // console.log("Lista Final: ", listasColl)
+            //console.log("Length: ", listasColl)
+            if(listasColl.length >= 2){
+                listasColl = listasColl.reduce((acc, curr, index) => {
+                    if(index === 1){
+                        let listHandlerAcc = acc.list.map(LI => {
+                            return { ...LI,  listID: acc.id, nomeLoja: acc.nomeLoja, lojaID: acc.lojaID}
+                        });
+                        let listHandlerCurr = curr.list.map(LI => {
+                            return { ...LI,  listID: curr.id, nomeLoja: curr.nomeLoja, lojaID: curr.lojaID}
+                        });
+                        return [...listHandlerAcc, ...listHandlerCurr]
+                    }else{
+                        let listHandlerCurr = curr.list.map(LI => {
+                            return { ...LI,  listID: curr.id, nomeLoja: curr.nomeLoja, lojaID: curr.ilojaIDd}
+                        });
+                        return [...acc, ...listHandlerCurr]
+                    }
+                })
+                console.log("ACTUAL: ", listasColl)
+            } else if(listasColl.length === 1){
+                listasColl = listasColl[0].list.map(list => {
+                    return { ...list,  listID: listasColl[0].id, nomeLoja: listasColl[0].nomeLoja, lojaID: listasColl[0].lojaID}
+                })
+            }
             setCheckListItems(listasColl)
             setListItems(listasColl)
 
         }).catch(err => {
             Alert.alert("Falha ao tentar buscar Listas.", "Contacte Administrador")
+            console.log("ERROR: ", err)
         })
         setFetchingLists(false)
     },[])

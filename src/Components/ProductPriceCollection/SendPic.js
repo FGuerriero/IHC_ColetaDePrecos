@@ -12,19 +12,23 @@ import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, upd
 
 export default function SendPic({ route, navigation }) {
     const [PRODUCTS, setPRODUCTS] = useState([])
+    const [STORES, setSTORES] = useState([])
     const [BRANDS, setBRANDS] = useState([])
-    const [startCamera, setStartCamera] = useState(false)
     const [startScannCodeBar, setStartScannCodeBar] = useState(false)
     const [photo, setPhoto] = useState(null)
     const [loja, setLoja] = useState("notSelected")
     const [marca, setMarca] = useState("notSelected")
-    const [produto, setProduto] = useState("notSelected")
-    const [location, setLocation] = useState(null)
     const [locationErrorMsg, setLocationErrorMsg] = useState(null)
     const [loading, setLoading] = useState(false)
     const [value, setValue] = useState(0)
+    const [valueCheck, setValueCheck] = useState(0)
     const [barCode, setBarCode] = useState("Código do Produto")
     const [productIndex, setProductIndex] = useState(0)
+    const [storeIndex, setStoreIndex] = useState(0)
+    
+    const [startCamera, setStartCamera] = useState(false)
+    const [produto, setProduto] = useState("notSelected")
+    const [location, setLocation] = useState(null)
 
     const __startCamera = async () =>{
         const {status} = await Camera.requestCameraPermissionsAsync()
@@ -42,6 +46,7 @@ export default function SendPic({ route, navigation }) {
 
     //Reload Hook
     useEffect( () => {
+        //---------------------MARCAS-------------------
         getDocs(collection(db, "Marcas")).then( async (snapShot) => {
             const brandsUpdated = snapShot.docs.map((doc) => {
                 return doc.data().nome
@@ -63,6 +68,7 @@ export default function SendPic({ route, navigation }) {
             setBRANDS(brandsUpdated)
             return
         })
+        //---------------------PRODUTOS-------------------
         getDocs(collection(db, "Produtos")).then( async (snapShot) => {
             const produtosUpdated = snapShot.docs.map((doc, index) => {
                 let docId = doc._document.key.path.segments.pop()
@@ -94,10 +100,45 @@ export default function SendPic({ route, navigation }) {
             return
         }).catch( (error) => {
             Alert.alert("Erro ao tentar trazer Produtos")
-            console.log("ERRO USUÁRIO!!", error)
+            console.log("ERRO PRODUTOS!!", error)
+        })
+        //---------------------LOJAS-------------------
+        getDocs(collection(db, "Lojas")).then( async (snapShot) => {
+            const lojasUpdated = snapShot.docs.map((doc, index) => {
+                let docId = doc._document.key.path.segments.pop()
+                if(route.params && (docId == route.params.lojaID)){
+                    return {...doc.data(), id: docId , currStore: true}
+                }
+                return {...doc.data(), id: docId }
+            })
+            //console.log("Stores: ", route.params)
+            lojasUpdated.sort((a,b) => {
+                const nameA = a.nome.toUpperCase(); // ignore upper and lowercase
+                const nameB = b.nome.toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                return -1;
+                }
+                if (nameA > nameB) {
+                return 1;
+                }
+            
+                // names must be equal
+                return 0;
+            })
+            lojasUpdated.forEach((store,index) => {
+                if(store.currStore){
+                    setStoreIndex(index+1)
+                }
+            });
+            //console.log("Brands: ", lojasUpdated)
+            setSTORES(lojasUpdated)
+            return
+        }).catch( (error) => {
+            Alert.alert("Erro ao tentar trazer Lojas")
+            console.log("ERRO LOJAS!!", error)
         })
         
-        console.log("Current Item: ", route.params)
+        //console.log("Current Item: ", route.params)
         const updateLocate = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted' && photo === null) {
@@ -113,12 +154,12 @@ export default function SendPic({ route, navigation }) {
 
         //-----------------Verifica se veio de CheckList-----------------
         if(route.params){
-            route.params.itemBarCode ? setBarCode(route.params.itemBarCode) : undefined
-            setProduto(route.params.itemCategory)
-            setLoja(route.params.storeName)
-            setMarca(route.params.itemBrand)
-            route.params.itemPrice ? setValue(route.params.itemPrice) : undefined
-            setPhoto({uri: route.params.url})
+            //setProduto(route.params.itemCategory)
+            //setLoja(route.params.storeName)
+            setMarca(route.params.marca)
+            route.params.codigoBarras ? setBarCode(route.params.codigoBarras) : undefined
+            route.params.preço && setValue(route.params.preço) 
+            route.params.url && setPhoto({uri: route.params.url})
         }
     },[])
 
@@ -130,21 +171,56 @@ export default function SendPic({ route, navigation }) {
         }else if(barCode === 'Código do Produto'){
             Alert.alert('Escaneie Código do Produto antes de enviar Coleta!')
             return
-        }else if( produto === 'notSelected' ){
+        }else if( productIndex === 0 ){
             Alert.alert('Selecione Produto antes de enviar Coleta!')
             return
-        } else if(loja === 'notSelected'){
+        } else if(storeIndex === 0){
             Alert.alert('Selecione Loja antes de enviar Coleta!')
             return
-        }else if(value < 0.01){
-            Alert.alert('Preço inválido! \nDigite um valor maior que R$0,01')
+        }else if(value < 0.01 && valueCheck < 0.01){
+            Alert.alert('Preço inválido! \nDigite um valor maior que R$0,009')
             return
-        }else if(productIndex === 0){
+        }else if(value != valueCheck){
+            Alert.alert('Os Campos "Preço" e "Confirmar Preço" devem ser iguais!')
+            return
+        }else if(marca === "notSelected"){
             Alert.alert('Digite a Marca do produto antes de enviar Coleta!')
             return
         }
 
         setLoading(true)
+
+        if(route.params){
+            // -------------------    UPDATE    ---------------
+        }else{
+            // ------------------- ADD ListaLivre ---------------
+            await addDoc(doc(db,"ListaLivre"),{
+                nome: PRODUCTS[productIndex].nome,
+                id: PRODUCTS[productIndex].id,
+                descricao: PRODUCTS[productIndex].descricao,
+                marca: marca,
+                preço: value,
+                codigoBarras: barCode,
+                url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000',
+                lojaID: STORES[storeIndex].id,
+                nomeLoja: STORES[storeIndex].nome
+            }).then((resp) => {
+                console.log("Response: ", resp)
+                Alert.alert("Coleta realizada com sucesso!")
+//asdfadfa
+                setPhoto(null)
+                setBarCode('Código do Produto')
+                setProductIndex(0)
+                setStoreIndex(0)
+                setValue(0)
+                setValueCheck(0)
+                setMarca("notSelected")
+
+                navigation.goBack()
+            }).catch(error => {
+                Alert.alert("ERROR: ", error)
+            })
+        }
 
         setTimeout(() => {
             navigation.goBack()
@@ -187,6 +263,7 @@ export default function SendPic({ route, navigation }) {
                                 selectedValue={productIndex}
                                 onValueChange={newValue => setProductIndex(newValue)}
                                 style={styles.picker}
+                                enabled={!route.params}
                             >
                                 <Picker.Item label='Selecione Produto' value={0} key={0} style={styles.pickerItemGrey}/>
                                 {
@@ -200,36 +277,38 @@ export default function SendPic({ route, navigation }) {
                             </Picker>
 
                             <Picker
+                                selectedValue={storeIndex}
+                                onValueChange={newValue => setStoreIndex(newValue)}
                                 style={styles.picker}
-                                selectedValue={loja}
-                                onValueChange={newValue => setLoja(newValue)}
+                                enabled={!route.params}
                             >
-                                <Picker.Item label='Selecione Loja' value='notSelected' key={0} />
-                                <Picker.Item label='Extra Pirituba' value='extraPirituba' key={1}/>
-                                <Picker.Item label='Açai Freguesia do Ó' value='acaiFreguesiaDoO' key={2}/>
-                                <Picker.Item label='Dia Mutinga' value='diaMutinga' key={3}/>
-                                <Picker.Item label='Pão de Açucar Vila Mariana' value='paoDeAcucarVilaMAriana' key={4}/>
-                                <Picker.Item label='Carrefour Colônia Alemã' value='carrefourColoniaAlema' key={5}/>
-                                <Picker.Item label='Carrefour Pirituba' value='Carrefour Pirituba' key={6}/>
-                                <Picker.Item label='Carrefour Anhanguera' value='Carrefour Anhanguera' key={7}/>
-                                <Picker.Item label='Extra Lapa' value='Extra Lapa' key={8}/>
+                                <Picker.Item label='Selecione Loja' value={0} key={0} style={styles.pickerItemGrey}/>
+                                {
+                                    STORES.map((item, index) => {
+                                        //console.log("Picker: ", item)
+                                        return (
+                                            <Picker.Item label={item.nome} value={index+1} key={index+1} style={styles.pickerItemBlack} />
+                                        )
+                                    })
+                                }
                             </Picker>
 
+                            <Picker
+                                selectedValue={marca}
+                                onValueChange={newValue => setMarca(newValue)}
+                                style={styles.picker}
+                                enabled={!route.params}
+                            >
+                                <Picker.Item label='Selecione Marca' value={null} key={0} style={styles.pickerItemGrey}/>
+                                {
+                                    BRANDS.map((item, index) => {
+                                        return (
+                                            <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
+                                        )
+                                    })
+                                }
+                            </Picker>
                             <View style={styles.textFieldContainer}>
-                                <Picker
-                                    selectedValue={marca}
-                                    onValueChange={newValue => setMarca(newValue)}
-                                    style={styles.picker}
-                                >
-                                    <Picker.Item label='Selecione Marca' value={null} key={0} style={styles.pickerItemGrey}/>
-                                    {
-                                        BRANDS.map((item, index) => {
-                                            return (
-                                                <Picker.Item label={item} value={item} key={index+1} style={styles.pickerItemBlack} />
-                                            )
-                                        })
-                                    }
-                                </Picker>
                                 <Text style={styles.label}> Preço: </Text>
                                 <CurrencyInput
                                     style={styles.preco}
@@ -243,8 +322,8 @@ export default function SendPic({ route, navigation }) {
                                 <Text style={styles.label}> Confirmar Preço: </Text>
                                 <CurrencyInput
                                     style={styles.preco}
-                                    value={value}
-                                    onChangeValue={setValue}
+                                    value={valueCheck}
+                                    onChangeValue={setValueCheck}
                                     prefix="R$"
                                     delimiter="."
                                     separator=","
