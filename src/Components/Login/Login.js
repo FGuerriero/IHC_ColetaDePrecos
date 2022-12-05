@@ -44,36 +44,18 @@ function Login({ navigation }) {
         } else {
             setLoading(true)
             const resultado = await logar(login, password);
-            await getDocs(collection(db, "Usuarios")).then((snapShot) => {
-                const newUser = snapShot.docs.filter((doc) => {
-                    return doc.data().uid == resultado.user.uid
-                })
-                //console.log("Resultado Login: ", newUser[0]._document.data)
-
-                // getDocs(collection(db,"Usuarios")).then( async (snapShot) => {
-                //     let currUserID =''
-                //     snapShot.docs.filter((doc,index) => {
-                //         if(doc.data().uid === resultado.user.uid){
-                //             currUserID = doc._document.key.path.segments.pop()
-                //             return true
-                //         }
-                //         return false
-                //     })
-                //     setUserAuth({
-                //         nome: newUser[0]._document.data.value.mapValue.fields.nome.stringValue,
-                //         email: newUser[0]._document.data.value.mapValue.fields.email.stringValue,
-                //         tipo: newUser[0]._document.data.value.mapValue.fields.tipo.stringValue,
-                //         uid: newUser[0]._document.data.value.mapValue.fields.uid.stringValue,
-                //         id: currUserID
-                //     })
-                // })
-            })
+            
             if (resultado == 'erro') {
                 setStatusError('firebase')
                 setMensagemError('Login ou senha não conferem')
                 setLoading(false)
             }
             else {
+                await getDocs(collection(db, "Usuarios")).then((snapShot) => {
+                    const newUser = snapShot.docs.filter((doc) => {
+                        return doc.data().uid == resultado.user.uid
+                    })
+                })
                 
                 navigation.replace('Home')
                 setLoading(false)

@@ -21,6 +21,7 @@ function Users({navigation}) {
             uid: ""
         }
     ])
+    const [fetchingUsers, setFetchingUsers] = useState(true)
     const [listItems, setListItems] = useState(usersAll)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
@@ -28,19 +29,28 @@ function Users({navigation}) {
     const [searchText, setSearchText] = useState('')
 
     const updateUsers = () => {
+        setFetchingUsers(true)
         getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
             const usersColl = snapShot.docs.map((doc,index) => {
+                let docId = doc._document.key.path.segments.pop()
                 //index === 0 ?console.log("ID"+index+": ", doc._document.key.path) : undefined
-                return {...doc.data(), id: doc._document.key.path.segments.pop()}
+                //console.log("GGGGGGGGGGGG: ",{...doc.data(), id: doc._document.key.path.segments.pop()})
+                //console.log("Item "+index+": ", docId)
+                return {...doc.data(), id: docId}
             })
             //console.log("Users: ", usersColl)
             
             usersColl.sort( SortArrayObj )
+            //console.log("Users: ", usersColl)
             setSearchText('')
             setUsersAll(usersColl)
             setListItems(usersColl)
 
+        }).catch(err => {
+            Alert.alert("ERRO ao buscar usuários: ", err)
+            console.log("ERRO ao buscar usuários: ", err)
         })
+        setFetchingUsers(false)
         return
     }
 
@@ -149,7 +159,7 @@ function Users({navigation}) {
                 <Text style={styles.txtNovoProduto}>NOVO USUÁRIO</Text>
             </TouchableOpacity>
             {
-                usersAll[0].email == "" ?
+                fetchingUsers ?
                     <View style={styles.activeIndicator}>
                         <ActivityIndicator style={{ transform: [{ scaleX: 2 }, { scaleY: 2 }] }} animating={true} size="large" color="#c0c0c0"/>
                     </View>
@@ -157,6 +167,7 @@ function Users({navigation}) {
                     <ScrollView style={styles.scrollContainer}>
                     {
                             listItems.map( (item,index) => {
+                                //console.log("Item: ", item)
                                 return(
                                     <View key={index} style={
                                         index === 0 ?

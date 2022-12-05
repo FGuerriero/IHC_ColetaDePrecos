@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Image, Alert } from 'react-native';
 import Header from '../Header/Header';
 
 import {AuthContext} from '../../Context/context'
@@ -10,26 +10,18 @@ function Home({ navigation }) {
 
     useEffect(() => {
         getDocs(collection(db, "Usuarios")).then((snapShot) => {
-            let currUserID =''
-            const newUser = snapShot.docs.filter((doc) => {
-                if(doc.data().uid == auth.currentUser.uid){
-                    currUserID = doc._document.key.path.segments.pop()
-                    return true
-                }
-                return false
+            let newUser = snapShot.docs.map((doc) => {
+                return {...doc.data(), id: doc._document.key.path.segments.pop(), iscurrUsr: (doc.data().uid == auth.currentUser.uid)}
             })
-            //console.log("Resultado Login: ", newUser[0]._document.data)
-            setUserAuth({
-                nome: newUser[0]._document.data.value.mapValue.fields.nome.stringValue,
-                email: newUser[0]._document.data.value.mapValue.fields.email.stringValue,
-                tipo: newUser[0]._document.data.value.mapValue.fields.tipo.stringValue,
-                uid: newUser[0]._document.data.value.mapValue.fields.uid.stringValue,
-                id: currUserID
-            })
+
+            newUser = newUser.filter( curr => curr.iscurrUsr)
+            
+            setUserAuth(newUser[0])
+        }).catch(err => {
+            Alert.alert("Erro de Login: ", err)
         })
-        
-        console.log("Current User: ", auth.currentUser.uid)
-        return
+
+        console.log("auth: ", userAuth)
     },[])
     
     return (
@@ -53,11 +45,16 @@ function Home({ navigation }) {
                                 source={require('../../../assets/checklist.png')}
                             />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('Manager')}>
-                            <Image 
-                                source={require('../../../assets/gerenciador.png')}
-                            />
-                        </TouchableOpacity>
+                        {
+                            (Object.keys(userAuth).indexOf('tipo') > -1 ? userAuth.tipo : "Coletor" ) == "Coletor" ?
+                                undefined
+                            :
+                                <TouchableOpacity onPress={() => navigation.navigate('Manager')}>
+                                    <Image 
+                                        source={require('../../../assets/gerenciador.png')}
+                                    />
+                                </TouchableOpacity>
+                        }
                         {/* <Image 
                             source={require('../../../assets/sincronização.png')}
                             style={{opacity: 0.5}}
@@ -115,6 +112,9 @@ const styles = StyleSheet.create({
     minorButtons: {
         display: 'flex',
         flexDirection: 'row',
+        width: '80%',
+        // borderColor: '#000',
+        // borderWidth: 2
     },
     fakeBtns: {
         display: 'flex',

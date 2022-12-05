@@ -1,8 +1,8 @@
 import { TabRouter } from '@react-navigation/native';
 import React, { useEffect, useState, useContext } from 'react';
-import { Text, StyleSheet, TouchableHighlight, View, Image, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, TouchableHighlight, View, Image, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
-import { auth } from '../../config/firebase';
+import {db,auth,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../config/firebase.js";
 
 import {AuthContext} from '../../Context/context'
 
@@ -30,7 +30,7 @@ function Header() {
             <View style={styles.headerText}>
                 <TouchableOpacity>
                     <Text style={styles.text}>
-                        {userAuth.nome}
+                        {userAuth  ? userAuth.nome : ''}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => deslogar()}>

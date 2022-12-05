@@ -1,159 +1,12 @@
 import React, {useState, useEffect, useContext} from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Alert, Pressable } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Image, ScrollView, TextInput, Modal, Alert, Pressable, DeviceEventEmitter, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../config/firebase.js";
+import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../config/firebase.js";
+import { getDoc } from 'firebase/firestore';
 
 import Header from '../Header/Header';
 import {AuthContext} from '../../Context/context'
-
-// const checkListItems = [
-//     {
-//         id: 1,
-//         itemCategory: 'Maionese',
-//         itemBrand: 'My Oh Nese!',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: 5.6,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-//     },{
-//         id: 2,
-//         itemCategory: 'Feijão',
-//         itemBrand: 'Camil',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: null,
-//         collected: false,
-//         itemBarCode: null,
-//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-//     },{
-//         id: 3,
-//         itemCategory: 'Arroz',
-//         itemBrand: 'Prato Fino',
-//         storeName: 'Carrefour Anhanguera',
-//         itemPrice: 12.99,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-//     },{
-//         id: 4,
-//         itemCategory: 'Macarrão',
-//         itemBrand: 'Renata',
-//         storeName: 'Extra Lapa',
-//         itemPrice: 2.50,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-//     },{
-//         id: 1,
-//         itemCategory: 'Maionese',
-//         itemBrand: 'My Oh Nese!',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: 5.6,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-//     },{
-//         id: 2,
-//         itemCategory: 'Feijão',
-//         itemBrand: 'Camil',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: null,
-//         collected: false,
-//         itemBarCode: null,
-//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-//     },{
-//         id: 3,
-//         itemCategory: 'Arroz',
-//         itemBrand: 'Prato Fino',
-//         storeName: 'Carrefour Anhanguera',
-//         itemPrice: 12.99,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-//     },{
-//         id: 4,
-//         itemCategory: 'Macarrão',
-//         itemBrand: 'Renata',
-//         storeName: 'Extra Lapa',
-//         itemPrice: 2.50,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-//     },{
-//         id: 1,
-//         itemCategory: 'Maionese',
-//         itemBrand: 'My Oh Nese!',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: 5.6,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-//     },{
-//         id: 2,
-//         itemCategory: 'Feijão',
-//         itemBrand: 'Camil',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: null,
-//         collected: false,
-//         itemBarCode: null,
-//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-//     },{
-//         id: 3,
-//         itemCategory: 'Arroz',
-//         itemBrand: 'Prato Fino',
-//         storeName: 'Carrefour Anhanguera',
-//         itemPrice: 12.99,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-//     },{
-//         id: 4,
-//         itemCategory: 'Macarrão',
-//         itemBrand: 'Renata',
-//         storeName: 'Extra Lapa',
-//         itemPrice: 2.50,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-//     },{
-//         id: 1,
-//         itemCategory: 'Maionese',
-//         itemBrand: 'My Oh Nese!',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: 5.6,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://uploads.metropoles.com/wp-content/uploads/2022/02/18191800/produtos-supermecado-o-dia-715x1024.jpg'
-//     },{
-//         id: 2,
-//         itemCategory: 'Feijão',
-//         itemBrand: 'Camil',
-//         storeName: 'Carrefour Pirituba',
-//         itemPrice: null,
-//         collected: false,
-//         itemBarCode: null,
-//         url: 'https://www.paodeacucar.com/img/uploads/1/29/10519029.jpeg'
-//     },{
-//         id: 3,
-//         itemCategory: 'Arroz',
-//         itemBrand: 'Prato Fino',
-//         storeName: 'Carrefour Anhanguera',
-//         itemPrice: 12.99,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000'
-//     },{
-//         id: 4,
-//         itemCategory: 'Macarrão',
-//         itemBrand: 'Renata',
-//         storeName: 'Extra Lapa',
-//         itemPrice: 2.50,
-//         collected: true,
-//         itemBarCode: '@#45wkm@#$%tQç.tvWk4p',
-//         url: 'https://carrefourbr.vtexassets.com/arquivos/ids/195563/220930_5.jpg?v=637272435428070000'
-//     },
-// ]
 
 function CheckList({navigation}) {
     const [checkListItems, setCheckListItems] = useState([])
@@ -162,6 +15,7 @@ function CheckList({navigation}) {
     const [clearModalVisible, setClearModalVisible] = useState(false)
     const { userAuth } = useContext(AuthContext)
     const [fetchingLists, setFetchingLists] = useState(true)
+    const [loading, setLoading] = useState(false)
 
     function SortArrayObj(a, b) {
         const nameA = a.nomeLoja.toUpperCase(); // ignore upper and lowercase
@@ -177,8 +31,49 @@ function CheckList({navigation}) {
         return 0;
     }
 
-    useEffect(() => {
-        //console.log("Auth: ", userAuth)
+    const clearCollection = async () => {
+        setLoading(true)
+        let currList
+        await getDoc(doc(db,"ColetasListas",listItems[currentIndex].listID))
+        .then(snap => {
+            currList = snap.data()
+        })
+        .catch(err => {
+            Alert.alert("ERROR: ", err)
+            console.log("ERROR: ", err)
+            return
+        })
+
+        let currListIndex 
+        //console.log("Text00000000: ", currList)
+        currList.list.forEach((prod,index) => {
+            prod.id === listItems[currentIndex].id ? currListIndex = index : undefined
+            return
+        })
+        //console.log("Antes: ", currListIndex)
+        currList.list[currListIndex] = {
+            id: listItems[currentIndex].id,
+            nome: listItems[currentIndex].nome,
+            marca: listItems[currentIndex].marca,
+            descricao: listItems[currentIndex].descricao
+        }
+        //console.log("Depois: ", currList)
+
+        await updateDoc(doc(db,"ColetasListas",listItems[currentIndex].listID),currList).then((resp) => {
+            //console.log("Response: ", resp)
+            Alert.alert("Dados deletados com sucesso!")
+
+            updateChecklist()
+            setClearModalVisible(!clearModalVisible)
+        }).catch(error => {
+            Alert.alert("ERROR: ", error)
+            console.log("ERROR: ", error)
+        })
+
+        setLoading(false)
+    }
+
+    const updateChecklist = () => {
         getDocs(collection(db, "ColetasListas")).then( async (snapShot) => {
             let listasColl = snapShot.docs.map((doc,index) => {
                 return {...doc.data(), id: doc._document.key.path.segments.pop()}
@@ -188,6 +83,7 @@ function CheckList({navigation}) {
                 //console.log("Coletor: ", list.data === new Date().toISOString().split('T')[0])
                 return ((list.coletorID === userAuth.id) && (list.data === new Date().toISOString().split('T')[0]))
             })
+            //console.log("List: ", listasColl)
             
             listasColl.sort( SortArrayObj )
             //console.log("Length: ", listasColl)
@@ -222,6 +118,17 @@ function CheckList({navigation}) {
             console.log("ERROR: ", err)
         })
         setFetchingLists(false)
+    }
+
+    useEffect(() => {
+        
+        DeviceEventEmitter.addListener("event.collectionUpdated", () => {
+            console.log("Edited Collection")
+            setFetchingLists(true)
+            updateChecklist()
+        });
+
+        updateChecklist()
     },[])
     
     return (
@@ -229,7 +136,7 @@ function CheckList({navigation}) {
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={{clearModalVisible}}
+                visible={clearModalVisible}
                 onRequestClose={() => {
                   //Alert.alert("Modal has been closed.");
                   setClearModalVisible(!clearModalVisible)
@@ -243,10 +150,14 @@ function CheckList({navigation}) {
                                 style={[styles.button, styles.buttonConfirm]}
                                 onPress={() => {
                                     // --------------- Handle Request to BackEnd
-                                    setClearModalVisible(!clearModalVisible)
+                                    clearCollection()
                                 }}
                                 >
-                                <Text style={styles.modalButtonTextStyle}>Limpar</Text>
+                                {loading?
+                                    <ActivityIndicator animating={loading} size="large" color="#fff"/>
+                                :
+                                    <Text style={styles.modalButtonTextStyle}>Limpar</Text>
+                                }
                             </Pressable>
                             <Pressable
                                 style={[styles.button, styles.buttonCancel]}

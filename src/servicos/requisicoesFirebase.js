@@ -45,7 +45,7 @@ export async function logar(email, senha) {
     return dadosDoUsuario
   })
   .catch((error) => {
-    console.log(error);
+    console.log("ERRO Firebase.js:",error);
     return "erro"
   });
   return resultado

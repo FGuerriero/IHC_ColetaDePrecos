@@ -9,6 +9,7 @@ import ScanBarCode from './ScanningBarCode';
 import Header from '../Header/Header';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../config/firebase.js";
+import { getDoc } from 'firebase/firestore';
 
 export default function SendPic({ route, navigation }) {
     const [PRODUCTS, setPRODUCTS] = useState([])
@@ -191,42 +192,86 @@ export default function SendPic({ route, navigation }) {
         setLoading(true)
 
         if(route.params){
-            // -------------------    UPDATE    ---------------
-        }else{
-            // ------------------- ADD ListaLivre ---------------
-            await addDoc(doc(db,"ListaLivre"),{
-                nome: PRODUCTS[productIndex].nome,
-                id: PRODUCTS[productIndex].id,
-                descricao: PRODUCTS[productIndex].descricao,
+            let currList
+            await getDoc(doc(db,"ColetasListas",route.params.listID))
+            .then(snap => {
+                currList = snap.data()
+            })
+            .catch(err => {
+                Alert.alert("ERROR: ", err)
+                console.log("ERROR: ", err)
+                return
+            })
+
+            let currListIndex 
+            currList.list.forEach((prod,index) => {
+                prod.id === route.params.id ? currListIndex = index : undefined
+                return
+            })
+
+            currList.list[currListIndex] = {
+                nome: PRODUCTS[productIndex-1].nome,
+                id: PRODUCTS[productIndex-1].id,
+                descricao: PRODUCTS[productIndex-1].descricao,
                 marca: marca,
                 preço: value,
                 codigoBarras: barCode,
                 url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000',
-                lojaID: STORES[storeIndex].id,
-                nomeLoja: STORES[storeIndex].nome
-            }).then((resp) => {
-                console.log("Response: ", resp)
+                lojaID: STORES[storeIndex-1].id,
+                nomeLoja: STORES[storeIndex-1].nome,
+                coletado: true
+            }
+
+            // -------------------    UPDATE    ---------------
+            await updateDoc(doc(db,"ColetasListas",route.params.listID),currList).then((resp) => {
+                //console.log("Response: ", resp)
                 Alert.alert("Coleta realizada com sucesso!")
-//asdfadfa
-                setPhoto(null)
-                setBarCode('Código do Produto')
-                setProductIndex(0)
-                setStoreIndex(0)
-                setValue(0)
-                setValueCheck(0)
-                setMarca("notSelected")
 
                 navigation.goBack()
             }).catch(error => {
                 Alert.alert("ERROR: ", error)
+                console.log("ERROR: ", error)
+            })
+            DeviceEventEmitter.emit("event.collectionUpdated")
+        }else{
+
+            await addDoc(collection(db,"ListaLivre"),{
+                nome: PRODUCTS[productIndex-1].nome,
+                id: PRODUCTS[productIndex-1].id,
+                descricao: PRODUCTS[productIndex-1].descricao,
+                marca: marca,
+                preço: value,
+                codigoBarras: barCode,
+                url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000',
+                lojaID: STORES[storeIndex-1].id,
+                nomeLoja: STORES[storeIndex-1].nome,
+                coletado: true
+            }).then((resp) => {
+                //console.log("Response: ", resp)
+                Alert.alert("Coleta realizada com sucesso!")
+
+                navigation.goBack()
+            }).catch(error => {
+                Alert.alert("ERROR: ", error)
+                console.log("ERROR: ", error)
             })
         }
 
-        setTimeout(() => {
-            navigation.goBack()
-            Alert.alert("Coleta de Preço do Produto realizada com sucesso!")
-        }, 3500)
+                
+        //--------------Zerando Variáveis
+        setProductIndex(0)
+        setMarca("notSelected")
+        setValue(0)
+        setValueCheck(0)
+        setBarCode('Código do Produto')
+        setPhoto(null)
+        setStoreIndex(0)
+        setLoading(true)
 
+        // setTimeout(() => {
+        //     navigation.goBack()
+        //     Alert.alert("Coleta de Preço do Produto realizada com sucesso!")
+        // }, 3500)
     }
 
     return (
@@ -332,15 +377,14 @@ export default function SendPic({ route, navigation }) {
                             </View>
                         </View>
 
-                        {
-                            loading?
-                            <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>:
-                            <View/>
-                        }
 
                         <View style={styles.footer}>
                             <TouchableOpacity style={styles.submitBtn} onPress={ sendInformation }>
-                                <Text style={styles.btnText}>GRAVAR</Text>
+                                {
+                                    loading?
+                                    <ActivityIndicator animating={loading} size="large" color="#FFF"/>:
+                                    <Text style={styles.btnText}>GRAVAR</Text>
+                                }
                             </TouchableOpacity>
                         </View>
                     </KeyboardAwareScrollView>
@@ -377,7 +421,8 @@ const styles = StyleSheet.create({
     },
     footer: {
         height: 40,
-        marginHorizontal: '5%'
+        marginHorizontal: '5%',
+        marginVertical:'5%'
     },
     submitBtn: {
         flex: 1,

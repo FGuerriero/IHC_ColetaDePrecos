@@ -26,6 +26,7 @@ function UsersCRUD({route, navigation}) {
             setType(route.params.tipo)
             setUid(route.params.uid)
         }
+        console.log("Curr: ", route.params)
     }, [])
 
     const GravarDevice = async () => {

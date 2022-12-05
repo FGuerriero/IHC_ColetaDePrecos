@@ -29,6 +29,11 @@
     },
     "web": {
       "favicon": "./assets/LOGO_Currency.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dd667f5a-ce02-4e3b-b89f-99f026d02660"
+      }
     }
   }
 }
