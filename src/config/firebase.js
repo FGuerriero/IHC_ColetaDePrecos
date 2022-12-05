@@ -1,4 +1,6 @@
 import { initializeApp } from "firebase/app";
+import { getStorage } from "firebase/storage";
+
 import { initializeAuth, getReactNativePersistence } from "firebase/auth/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -62,3 +64,5 @@ export {
   query,
   where,
 };
+
+export const storage = getStorage(app);

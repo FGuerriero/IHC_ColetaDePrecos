@@ -10,6 +10,15 @@ import Header from '../Header/Header';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../config/firebase.js";
 
+import {
+    ref,
+    uploadBytes,
+    getDownloadURL,
+    listAll,
+    list,
+  } from "firebase/storage";
+  import { storage } from "../../config/firebase";
+
 export default function SendPic({ route, navigation }) {
     const [PRODUCTS, setPRODUCTS] = useState([])
     const [BRANDS, setBRANDS] = useState([])
@@ -25,6 +34,7 @@ export default function SendPic({ route, navigation }) {
     const [value, setValue] = useState(0)
     const [barCode, setBarCode] = useState("Código do Produto")
     const [productIndex, setProductIndex] = useState(0)
+    const [imageUrls, setImageUrls] = useState([]);
 
     const __startCamera = async () =>{
         const {status} = await Camera.requestCameraPermissionsAsync()
@@ -130,9 +140,9 @@ export default function SendPic({ route, navigation }) {
         }else if(barCode === 'Código do Produto'){
             Alert.alert('Escaneie Código do Produto antes de enviar Coleta!')
             return
-        }else if( produto === 'notSelected' ){
-            Alert.alert('Selecione Produto antes de enviar Coleta!')
-            return
+      //  }else if( produto === 'notSelected' ){
+      //      Alert.alert('Selecione Produto antes de enviar Coleta!')
+      //      return
         } else if(loja === 'notSelected'){
             Alert.alert('Selecione Loja antes de enviar Coleta!')
             return
@@ -145,7 +155,19 @@ export default function SendPic({ route, navigation }) {
         }
 
         setLoading(true)
-
+        
+// codigo de gravacao da foto
+console.log(photo);
+console.log(photo.uri);
+const photoName = photo.uri.substring(photo.uri.lastIndexOf('/')+1);
+console.log(photoName);
+// const imagesListRef = ref(storage, "imagemColetas/");
+const imageRef = ref(storage, `imagemColetas/${photoName}`);
+uploadBytes(imageRef, photo).then((snapshot) => {
+  getDownloadURL(snapshot.ref).then((url) => {
+    setImageUrls((prev) => [...prev, url]);
+  });
+});
         setTimeout(() => {
             navigation.goBack()
             Alert.alert("Coleta de Preço do Produto realizada com sucesso!")
