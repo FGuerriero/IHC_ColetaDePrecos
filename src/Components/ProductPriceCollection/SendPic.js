@@ -161,9 +161,24 @@ console.log(photo);
 console.log(photo.uri);
 const photoName = photo.uri.substring(photo.uri.lastIndexOf('/')+1);
 console.log(photoName);
+
+const blob = await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      resolve(xhr.response);
+    };
+    xhr.onerror = function (e) {
+      console.log(e);
+    reject(new TypeError("Network request failed"));
+    };
+    xhr.responseType = "blob";
+    xhr.open("GET", photo.uri, true);
+    xhr.send(null);
+});
+
 // const imagesListRef = ref(storage, "imagemColetas/");
 const imageRef = ref(storage, `imagemColetas/${photoName}`);
-uploadBytes(imageRef, photo).then((snapshot) => {
+uploadBytes(imageRef, blob).then((snapshot) => {
   getDownloadURL(snapshot.ref).then((url) => {
     setImageUrls((prev) => [...prev, url]);
   });
