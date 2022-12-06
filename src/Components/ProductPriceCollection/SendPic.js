@@ -253,6 +253,14 @@ export default function SendPic({ route, navigation }) {
                 coletado: true
             }
 
+            let countCollected = 0
+            currList.list.forEach(item => {
+                item.coletado && countCollected++
+                return
+            })
+
+            currList.concluida = (currList.list.length == countCollected)
+
             // -------------------    UPDATE    ---------------
             await updateDoc(doc(db,"ColetasListas",route.params.listID),currList).then((resp) => {
                 //console.log("Response: ", resp)
@@ -263,7 +271,7 @@ export default function SendPic({ route, navigation }) {
                 Alert.alert("ERROR: ", error)
                 console.log("ERROR: ", error)
             })
-            DeviceEventEmitter.emit("event.collectionUpdated")
+            DeviceEventEmitter.emit("event.collectionUpdated", {listID: currList.id})
         }else{
 
             await addDoc(collection(db,"ListaLivre"),{

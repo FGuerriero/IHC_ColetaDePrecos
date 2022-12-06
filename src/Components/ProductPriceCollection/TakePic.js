@@ -25,7 +25,9 @@ export default function TakePic({ route, navigation }) {
 
     const preViewavePic = () => {
         DeviceEventEmitter.emit("event.pictureCapture", {capturedImage});
+        console.log("Image: ", capturedImage)
         navigation.goBack()
+        setCapturedImage(null)
         return
     }
 
@@ -38,7 +40,7 @@ export default function TakePic({ route, navigation }) {
         }
 
         return () => {
-            DeviceEventEmitter.removeAllListeners("event.pictureCapture")
+            //DeviceEventEmitter.removeAllListeners("event.pictureCapture")
         }
     }, [])
     

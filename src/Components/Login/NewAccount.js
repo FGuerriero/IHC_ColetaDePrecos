@@ -50,6 +50,7 @@ function NewAccount({ navigation }) {
                     setStatusError('firebase');
                     if (resultado.user) {
                         console.log("Cadastro realizado com sucesso!")
+                        Alert.alert("Cadastro realizado com sucesso!")
                         const newUser = await addDoc(collection(db, "Usuarios"), {
                             nome: nome,
                             email: email,
@@ -118,11 +119,11 @@ function NewAccount({ navigation }) {
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>CADASTRAR</Text>
                 </TouchableOpacity>
                 <ActivityIndicator animating={loading} size="large" color="#A60A0A"/>
-                <Alerta
+                {/* <Alerta
                     mensagem={mensagemError}
                     error={statusError == 'firebase'}
                     setError={setStatusError}
-                />
+                /> */}
             </View>
         </KeyboardAwareScrollView>
     );

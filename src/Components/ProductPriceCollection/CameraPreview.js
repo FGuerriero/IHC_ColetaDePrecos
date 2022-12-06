@@ -17,7 +17,7 @@ export default function CameraPreview(props) {
 
     useEffect(() => {
         return () => {
-            DeviceEventEmitter.removeAllListeners("event.previewSave")
+            //DeviceEventEmitter.removeAllListeners("event.previewSave")
         }
     }, [])
 
