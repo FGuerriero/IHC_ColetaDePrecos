@@ -8,10 +8,11 @@ import {AuthContext} from '../../Context/context'
 
 function Header() {
     const navigation = useNavigation()
-    const { userAuth } = useContext(AuthContext)
+    const { userAuth, setUserAuth } = useContext(AuthContext)
 
     function deslogar() {
         auth.signOut();
+        setUserAuth({nome: ''})
         navigation.navigate('Login');
     }
 
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
         height: 90,
         // width: '100%',
         backgroundColor: '#000',
-        marginTop: '6%',
+        //marginTop: '6%',
         alignItems: 'center'
     },
     profileImgContainer: {

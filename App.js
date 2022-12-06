@@ -28,39 +28,42 @@ export default function App() {
   const Stack = createNativeStackNavigator();
 
   return (
-    <NavigationContainer style={styles.container} initialRouteName="Login">
-      <AuthProvider>
+    <SafeAreaView style={styles.container}>
+      <NavigationContainer initialRouteName="Login">
+        <AuthProvider>
 
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={Login}/>
-            <Stack.Screen name="ForgotPass" component={ForgotPass}/>
-            <Stack.Screen name="NewAccount" component={NewAccount}/>
-          <Stack.Screen name="Home" component={Home}/>
-          <Stack.Screen name="SendPic" component={SendPic} />
-            <Stack.Screen name ="TakePic" component={TakePic} />
-          <Stack.Screen name="CheckList" component={CheckList} />
-          <Stack.Screen name="Manager" component={Manager} />
-            <Stack.Screen name="Products" component={Products} />
-              <Stack.Screen name='ProductsCRUD' component={ProductsCRUD} />
-            <Stack.Screen name="Stores" component={Stores} />
-              <Stack.Screen name='StoresCRUD' component={StoresCRUD} />
-            <Stack.Screen name="Devices" component={Devices} />
-              <Stack.Screen name='DevicesCRUD' component={DevicesCRUD} />
-            <Stack.Screen name="Users" component={Users} />
-              <Stack.Screen name='UsersCRUD' component={UsersCRUD} />
-            <Stack.Screen name="ManageChecklists" component={ManageChecklists} />
-              <Stack.Screen name='ChecklistCRUD' component={ChecklistCRUD} />
-        </Stack.Navigator>
-      </AuthProvider>
-      {/* {
-        loginValidation ? <Home /> : <Login handleLogin={setLoginValidation}/>
-      } */}
-    </NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login" component={Login}/>
+              <Stack.Screen name="ForgotPass" component={ForgotPass}/>
+              <Stack.Screen name="NewAccount" component={NewAccount}/>
+            <Stack.Screen name="Home" component={Home}/>
+            <Stack.Screen name="SendPic" component={SendPic} />
+              <Stack.Screen name ="TakePic" component={TakePic} />
+            <Stack.Screen name="CheckList" component={CheckList} />
+            <Stack.Screen name="Manager" component={Manager} />
+              <Stack.Screen name="Products" component={Products} />
+                <Stack.Screen name='ProductsCRUD' component={ProductsCRUD} />
+              <Stack.Screen name="Stores" component={Stores} />
+                <Stack.Screen name='StoresCRUD' component={StoresCRUD} />
+              <Stack.Screen name="Devices" component={Devices} />
+                <Stack.Screen name='DevicesCRUD' component={DevicesCRUD} />
+              <Stack.Screen name="Users" component={Users} />
+                <Stack.Screen name='UsersCRUD' component={UsersCRUD} />
+              <Stack.Screen name="ManageChecklists" component={ManageChecklists} />
+                <Stack.Screen name='ChecklistCRUD' component={ChecklistCRUD} />
+          </Stack.Navigator>
+        </AuthProvider>
+        {/* {
+          loginValidation ? <Home /> : <Login handleLogin={setLoginValidation}/>
+        } */}
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // paddingTop: '6%'
   }
 })

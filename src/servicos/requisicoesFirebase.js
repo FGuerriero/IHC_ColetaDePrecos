@@ -41,7 +41,7 @@ export async function cadastrar(email, senha) {
 export async function logar(email, senha) {
   const resultado = await signInWithEmailAndPassword(auth, email, senha)
   .then((dadosDoUsuario) => {
-    console.log(dadosDoUsuario)
+    //console.log(dadosDoUsuario)
     return dadosDoUsuario
   })
   .catch((error) => {

@@ -10,7 +10,20 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env" : {
+        "API_KEY":"AIzaSyCuw9tR3NrgWCWROmDrOwTSYPMnIm3Yb00",
+        "AUTH_DOMAIN":"coleta-preco-easy.firebaseapp.com",
+        "PROJECT_ID":"coleta-preco-easy",
+        "STORAGE_BUCKET":"coleta-preco-easy.appspot.com",
+        "MESSAGING_SENDER_ID":"683250376036",
+        "APP_ID":"1:683250376036:web:2de289d186dbda5a306e71",
+        "MEASUREMENT_ID":"G-PVBY41XZMY"
+      }
+    }
   },
   "submit": {
     "production": {}

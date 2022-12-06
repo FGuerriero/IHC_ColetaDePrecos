@@ -7,22 +7,6 @@ import {db,auth,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../.
 
 function Home({ navigation }) {
     const { userAuth, setUserAuth } = useContext(AuthContext)
-
-    useEffect(() => {
-        getDocs(collection(db, "Usuarios")).then((snapShot) => {
-            let newUser = snapShot.docs.map((doc) => {
-                return {...doc.data(), id: doc._document.key.path.segments.pop(), iscurrUsr: (doc.data().uid == auth.currentUser.uid)}
-            })
-
-            newUser = newUser.filter( curr => curr.iscurrUsr)
-            
-            setUserAuth(newUser[0])
-        }).catch(err => {
-            Alert.alert("Erro de Login: ", err)
-        })
-
-        console.log("auth: ", userAuth)
-    },[])
     
     return (
         <View style={styles.container}>
@@ -46,7 +30,7 @@ function Home({ navigation }) {
                             />
                         </TouchableOpacity>
                         {
-                            (Object.keys(userAuth).indexOf('tipo') > -1 ? userAuth.tipo : "Coletor" ) == "Coletor" ?
+                            ((typeof userAuth === 'object' && (Object.keys(userAuth).indexOf('tipo') > -1)) ? userAuth.tipo : "Coletor" ) == "Coletor" ?
                                 undefined
                             :
                                 <TouchableOpacity onPress={() => navigation.navigate('Manager')}>
@@ -81,14 +65,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         width: 150,
         marginLeft: 5
-    },
-    title: {
-        flex: .4,
-        alignSelf: 'center',
-        marginTop: 10,
-        fontWeight: 'bold',
-        fontSize: 30,
-        color: 'black'
     },
     body: {
         flex: .8,
