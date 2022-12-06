@@ -10,6 +10,8 @@ import Header from '../Header/Header';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {db,authManager,collection, getDocs,addDoc,doc,query,where,deleteDoc, updateDoc} from "../../config/firebase.js";
 import { getDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import uuid from "uuid";
 
 export default function SendPic({ route, navigation }) {
     const [PRODUCTS, setPRODUCTS] = useState([])
@@ -41,12 +43,39 @@ export default function SendPic({ route, navigation }) {
         }
     }
 
-    DeviceEventEmitter.addListener("event.pictureCapture", (eventData) => {
-        setPhoto(eventData.capturedImage)
-    });
+    async function uploadImageAsync(uri) {
+        // Why are we using XMLHttpRequest? See:
+        // https://github.com/expo/expo/issues/2402#issuecomment-443726662
+        const blob = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function () {
+            resolve(xhr.response);
+          };
+          xhr.onerror = function (e) {
+            console.log(e);
+            reject(new TypeError("Network request failed"));
+          };
+          xhr.responseType = "blob";
+          xhr.open("GET", uri, true);
+          xhr.send(null);
+        });
+      
+        const fileRef = ref(getStorage(), uuid.v4());
+        const result = await uploadBytes(fileRef, blob);
+      
+        // We're done with the blob, close and release it
+        blob.close();
+      
+        return await getDownloadURL(fileRef);
+      }
 
     //Reload Hook
     useEffect( () => {
+
+        DeviceEventEmitter.addListener("event.pictureCapture", (eventData) => {
+            setPhoto(eventData.capturedImage)
+        });
+
         //---------------------MARCAS-------------------
         getDocs(collection(db, "Marcas")).then( async (snapShot) => {
             const brandsUpdated = snapShot.docs.map((doc) => {
@@ -191,6 +220,8 @@ export default function SendPic({ route, navigation }) {
 
         setLoading(true)
 
+        const uploadedURL = await uploadImageAsync(photo.uri)
+
         if(route.params){
             let currList
             await getDoc(doc(db,"ColetasListas",route.params.listID))
@@ -216,7 +247,7 @@ export default function SendPic({ route, navigation }) {
                 marca: marca,
                 preço: value,
                 codigoBarras: barCode,
-                url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000',
+                url: uploadedURL,
                 lojaID: STORES[storeIndex-1].id,
                 nomeLoja: STORES[storeIndex-1].nome,
                 coletado: true
@@ -242,7 +273,7 @@ export default function SendPic({ route, navigation }) {
                 marca: marca,
                 preço: value,
                 codigoBarras: barCode,
-                url: 'https://bighiper.vtexassets.com/arquivos/ids/167874/image789629030001-1.jpg?v=637392392303730000',
+                url: uploadedURL,
                 lojaID: STORES[storeIndex-1].id,
                 nomeLoja: STORES[storeIndex-1].nome,
                 coletado: true
@@ -459,7 +490,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
         borderWidth: 3,
-        borderColor: '#3cbfad87'
+        borderColor: '#A60A0A99'
     },
     logo: {
         flex: 1,
