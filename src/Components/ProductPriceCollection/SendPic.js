@@ -265,13 +265,13 @@ export default function SendPic({ route, navigation }) {
             await updateDoc(doc(db,"ColetasListas",route.params.listID),currList).then((resp) => {
                 //console.log("Response: ", resp)
                 Alert.alert("Coleta realizada com sucesso!")
+                DeviceEventEmitter.emit("event.collectionUpdated", {listID: currList.id})
 
                 navigation.goBack()
             }).catch(error => {
                 Alert.alert("ERROR: ", error)
                 console.log("ERROR: ", error)
             })
-            DeviceEventEmitter.emit("event.collectionUpdated", {listID: currList.id})
         }else{
 
             await addDoc(collection(db,"ListaLivre"),{
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
     pickerItemGrey: {
-        fontSize: 20,
+        fontSize: 27,
         color: '#868686'
     }
 })

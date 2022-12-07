@@ -17,6 +17,16 @@ function CheckList({navigation}) {
     const [fetchingLists, setFetchingLists] = useState(true)
     const [loading, setLoading] = useState(false)
 
+    useEffect(() => {
+        DeviceEventEmitter.addListener("event.collectionUpdated", () => {
+            console.log("Edited Collection")
+            setFetchingLists(true)
+            updateChecklist()
+        });
+
+        updateChecklist()
+    },[])
+
     function SortArrayObj(a, b) {
         const nameA = a.nomeLoja.toUpperCase(); // ignore upper and lowercase
         const nameB = b.nomeLoja.toUpperCase(); // ignore upper and lowercase
@@ -119,17 +129,6 @@ function CheckList({navigation}) {
         })
         setFetchingLists(false)
     }
-
-    useEffect(() => {
-        
-        DeviceEventEmitter.addListener("event.collectionUpdated", () => {
-            console.log("Edited Collection")
-            setFetchingLists(true)
-            updateChecklist()
-        });
-
-        updateChecklist()
-    },[])
     
     return (
         <View style={styles.container}>

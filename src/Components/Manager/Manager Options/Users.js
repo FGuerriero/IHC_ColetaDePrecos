@@ -28,6 +28,16 @@ function Users({navigation}) {
     const [loading, setLoading] = useState(false)
     const [searchText, setSearchText] = useState('')
 
+    useEffect(() => {
+        //console.log("UseEffect")
+        updateUsers()
+
+        DeviceEventEmitter.addListener("event.userUpdated", () => {
+            console.log("Edited User")
+            updateUsers()
+        });
+    },[])
+
     const updateUsers = () => {
         setFetchingUsers(true)
         getDocs(collection(db, "Usuarios")).then( async (snapShot) => {
@@ -80,16 +90,6 @@ function Users({navigation}) {
         // names must be equal
         return 0;
     }
-
-    useEffect(() => {
-        //console.log("UseEffect")
-        updateUsers()
-
-        DeviceEventEmitter.addListener("event.userUpdated", () => {
-            console.log("Edited User")
-            updateUsers()
-        });
-    },[])
 
     return (
         <View style={styles.container}>

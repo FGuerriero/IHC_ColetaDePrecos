@@ -58,13 +58,13 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     },
     save: {
-        backgroundColor: 'lightgreen',
+        backgroundColor: '#4FAE2D',
         flex: 1,
         justifyContent: 'center',
         height: 60
     },
     reTake: {
-        backgroundColor: 'tomato',
+        backgroundColor: '#A60A0A',
         flex: 1,
         justifyContent: 'center',
         height: 60

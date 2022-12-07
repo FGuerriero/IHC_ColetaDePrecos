@@ -212,13 +212,14 @@ function ChecklistCRUD({route, navigation}) {
                         setStoreIndex(0);
                         setDate('');
                         setLoadVisible(false)
+                        
+                        DeviceEventEmitter.emit("event.listUpdated")
     
                         navigation.goBack()
                     }).catch(err => {
                         Alert.alert("Erro ao tentar alterar Lista!")
                         setLoadVisible(false)
                     })
-                    DeviceEventEmitter.emit("event.listUpdated")
                 }else{
                     if(newList.length == 0){
                         const newList = await addDoc(collection(db, "ColetasListas"), {
@@ -230,6 +231,9 @@ function ChecklistCRUD({route, navigation}) {
                         }).then( resp => {
                             //console.log("Sucesso ao Criar Produto: ", resp)
                             Alert.alert("Lista cadastrada com sucesso!")
+
+                            DeviceEventEmitter.emit("event.listUpdated")
+
                             navigation.goBack()
                             
                             setStoreIndex(0);
@@ -238,7 +242,6 @@ function ChecklistCRUD({route, navigation}) {
                         }).catch( error => {
                             console.log("Erro ao tentar criar Lista", error)
                         })
-                        DeviceEventEmitter.emit("event.listUpdated")
                     }else{
                         Alert.alert("Já existe uma Lista cadastrada para este coletor no mesmo dia e local!")
                         setLoadVisible(false)
