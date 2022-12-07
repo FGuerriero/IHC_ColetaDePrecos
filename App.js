@@ -1,7 +1,9 @@
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackView } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+
+import React, { useState, useEffect } from 'react';
 import Login from './src/Components/Login/Login';
 import Home from './src/Components/Home/Home';
 import SendPic from './src/Components/ProductPriceCollection/SendPic';
@@ -18,7 +20,6 @@ import DevicesCRUD from './src/Components/Manager/Manager Options/CRUDs/DevicesC
 import UsersCRUD from './src/Components/Manager/Manager Options/CRUDs/UsersCRUD';
 import ForgotPass from './src/Components/Login/ForgotPass';
 import NewAccount from './src/Components/Login/NewAccount';
-
 import AuthProvider from './src/Context/context';
 import ManageChecklists from './src/Components/Manager/Manager Options/ManageChecklist';
 import ChecklistCRUD from './src/Components/Manager/Manager Options/CRUDs/ChecklistCRUD';
@@ -26,6 +27,11 @@ import ChecklistCRUD from './src/Components/Manager/Manager Options/CRUDs/Checkl
 export default function App() {
   // const [loginValidation, setLoginValidation] = useState(false)
   const Stack = createNativeStackNavigator();
+
+  useEffect(() => {
+    StatusBar.setStatusBarHidden(false, 'fade')
+    StatusBar.setStatusBarStyle('dark')
+  },[])
 
   return (
     <AuthProvider>

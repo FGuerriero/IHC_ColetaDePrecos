@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "ColetaDePreçosEmLojas",
-    "slug": "ColetaDePrecosEmLojas",
+    "name": "Coleta De Preços",
+    "slug": "Coleta De Preços",
     "version": "1.1.4",
     "orientation": "portrait",
     "icon": "./assets/LOGO_Currency.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/LOGO_Currency.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
