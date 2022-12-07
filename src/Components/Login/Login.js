@@ -3,18 +3,15 @@ import { Text, StyleSheet, TouchableOpacity, Alert,
     View, ScrollView, ActivityIndicator, Image, TextInput
  } from 'react-native';
  import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
- import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc} from "../../config/firebase.js";
+ import {db,collection, getDocs,addDoc,doc,query,where,deleteDoc, auth} from "../../config/firebase.js";
+ import { logar } from '../../servicos/requisicoesFirebase';
 
 import { Alerta } from '../Alerta';
 import {AuthContext} from '../../Context/context'
 
-import { auth } from '../../config/firebase';
-import { logar } from '../../servicos/requisicoesFirebase';
-
 function Login({ navigation }) {
     const [login, setLogin] = useState('')
     const [password, setPassword] = useState('')
-    const [createAccount, setCreateAccount] = useState(null)
     const [loading, setLoading] = useState(false)
 
     const [statusError, setStatusError] = useState('');
@@ -23,39 +20,40 @@ function Login({ navigation }) {
     const { userAuth, setUserAuth } = useContext(AuthContext)
 
     useEffect(() => {
-        let athFlag = true
-        const estadoUsuario = auth.onAuthStateChanged(usuario => {
-            console.log("USer: ", usuario ? usuario.uid : typeof usuario)
-            if (usuario && athFlag) {
-                getDocs(collection(db, "Usuarios")).then((snapShot) => {
-                    //console.log("Snapshot: ", snapShot.docs)
-                    let newUser = snapShot.docs.map((doc) => {
-                        let docID = doc._document.key.path.segments.pop()
-                        console.log("Doc: ", doc.data().uid)
-                        console.log("Auth: ", auth.currentUser.uid)
-                        return {...doc.data(), id: docID, iscurrUsr: (doc.data().uid == auth.currentUser.uid)}
-                    })
-        
-                    newUser = newUser.filter( curr => curr.iscurrUsr)
-                    console.log("TEEEEEE: ", newUser[0])
-                    setUserAuth(newUser[0])
-        
-                    console.log("auth: ", userAuth)
-                    navigation.replace('Home')
-                    console.log("AAAAAAAAAAAAAAAA: Entrou Aqui")
-                }).catch(err => {
-                    Alert.alert("Erro de Login: ", err.message)
-                })
-                athFlag = false
-            }
+        if(Object.keys(userAuth).indexOf('nome') > -1 && userAuth.nome != ''){
+            navigation.push('Home')
+        }
+        // let authFlag = true
+        // if( !auth && authFlag ){
+        //     authFlag = false
+        //     updateAuth()
+        // }
+        //console.log("Auth: ", auth.currentUser)
+    },[userAuth])
+
+    async function updateAuth() {
+        getDocs(collection(db, "Usuarios")).then((snapShot) => {
+            //console.log("Snapshot: ", snapShot.docs)
+            let newUser = snapShot.docs.map((doc) => {
+                let docID = doc._document.key.path.segments.pop()
+                // console.log("Doc: ", doc.data().uid)
+                // console.log("Auth: ", auth.currentUser.uid)
+                return {...doc.data(), id: docID, iscurrUsr: (doc.data().uid == auth.currentUser.uid)}
+            })
+
+            newUser = newUser.filter( curr => curr.iscurrUsr)
+            //console.log("TEEEEEE: ", newUser[0])
+            setUserAuth(newUser[0])
+
+            //console.log("auth: ", userAuth)
+            //console.log("AAAAAAAAAAAAAAAA: Entrou Aqui")
+            setLogin('')
+            setPassword('')
+            setLoading(false)
+        }).catch(err => {
+            Alert.alert("Erro de Login: ", err.message)
         })
-
-        //return estadoUsuario
-
-        //console.log("BBBBBBBBBBBBBBB: ", userAuth)
-        //console.log("Current User: ", auth.currentUser)
-        //return () => estadoUsuario();
-    }, [])
+    }
 
     async function realizarLogin() {
         console.log(login);
@@ -76,14 +74,7 @@ function Login({ navigation }) {
                 setLoading(false)
             }
             else {
-                await getDocs(collection(db, "Usuarios")).then((snapShot) => {
-                    const newUser = snapShot.docs.filter((doc) => {
-                        return doc.data().uid == resultado.user.uid
-                    })
-                })
-                
-                navigation.replace('Home')
-                setLoading(false)
+                await updateAuth()
             }
         }
     }
@@ -100,12 +91,14 @@ function Login({ navigation }) {
                         style={styles.input}
                         placeholder={'insira seu e-mail'}
                         onChangeText={inputLogin => setLogin(inputLogin)}
+                        value={login}
                     />
                     <TextInput
                         style={styles.input}
                         placeholder={'insira sua senha'}
                         onChangeText={inputPass => setPassword(inputPass)}
                         secureTextEntry={true}
+                        value={password}
                     />
                 </View>
                 <View style={styles.formButtons}>
