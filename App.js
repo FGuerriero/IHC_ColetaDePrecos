@@ -1,7 +1,7 @@
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackView } from '@react-navigation/native-stack';
-// import { StatusBar } from 'expo-status-bar';
+import { StatusBar, setStatusBarHidden, setStatusBarStyle } from 'expo-status-bar';
 
 import React, { useState, useEffect } from 'react';
 import Login from './src/Components/Login/Login';
@@ -28,10 +28,10 @@ export default function App() {
   // const [loginValidation, setLoginValidation] = useState(false)
   const Stack = createNativeStackNavigator();
 
-  // useEffect(() => {
-  //   StatusBar.setStatusBarHidden(false, 'fade')
-  //   StatusBar.setStatusBarStyle('dark')
-  // },[])
+  useEffect(() => {
+    setStatusBarHidden(false, 'fade')
+    setStatusBarStyle('dark')
+  },[])
 
   return (
     <AuthProvider>

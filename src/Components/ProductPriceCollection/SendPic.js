@@ -571,15 +571,16 @@ const styles = StyleSheet.create({
         marginBottom: '3%'
     },
     label: {
-        fontSize: 20,
+        fontSize: 22,
         marginBottom: 5,
         fontWeight: 'bold'
     },
     textFieldContainer: {
-        height: '30%',
+        height: '40%',
         //backgroundColor: '#fffb',
         marginBotton: '10%',
-        padding: 5
+        padding: 5,
+        fontSize: 25
     },
     barCodeContainer: {
         flex: .2,
@@ -606,7 +607,10 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
     pickerItemGrey: {
-        fontSize: 27,
+        fontSize: 20,
         color: '#868686'
+    },
+    pickerItemBlack: {
+        fontSize: 25,
     }
 })
